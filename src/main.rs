@@ -12,23 +12,23 @@ struct RestaurantId(String);
 impl Restaurant {
     fn new(
         id: RestaurantId,
-        name: String,
+        name: &str,
         rating: f32,
         distance: f64,
-        tags: Option<Vec<String>>,
-        image: String,
+        tags: Option<Vec<&str>>,
+        image: &str,
     ) -> Self {
         Restaurant {
             id,
-            name,
+            name: name.to_string(),
             rating,
             distance,
-            tags,
-            image,
+            tags: tags.map(|t| t.into_iter().map(|s| s.to_string()).collect()),
+            image: image.to_string(),
         }
     }
-    fn update_name(&self, new_name: String) -> Self {
-        Restaurant::new(self.id, new_name, self.rating, self.distance, self.tags, self.image)
+    fn update_name(&self, new_name: &str) -> Self {
+        Restaurant::new(self.id, new_name, self.rating, self.distance, self.tags, &self.image)
     }
 }
 
