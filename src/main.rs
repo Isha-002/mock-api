@@ -1,5 +1,14 @@
-use std::{fmt::{self}, io::{Error, ErrorKind}, str::FromStr};
+use axum::Json;
+use axum::{response::IntoResponse, routing::get, Router};
+use serde::{Deserialize, Serialize};
+use serde_json::to_string_pretty;
+use std::{
+    fmt::{self},
+    io::{Error, ErrorKind},
+    str::FromStr,
+};
 
+#[derive(Serialize, Deserialize)]
 struct Restaurant {
     id: RestaurantId,
     name: String,
@@ -9,7 +18,7 @@ struct Restaurant {
     image: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct RestaurantId(String);
 
 impl Restaurant {
@@ -52,7 +61,6 @@ impl fmt::Display for Restaurant {
     }
 }
 
-
 impl fmt::Display for RestaurantId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -69,16 +77,43 @@ impl FromStr for RestaurantId {
     }
 }
 
-fn main() {
-    let res = Restaurant::new(
-        RestaurantId::from_str("1").expect("No id provided"),
-        "kebab",
-        3.5,
-        2.5,
-        Some(vec!["aaa".to_string(), "aaa".to_string()]),
-        "img",
+#[tokio::main]
+async fn main() {
+    let data = Restaurant::new(
+        RestaurantId(1.to_string()),
+        "sigma",
+        2.2,
+        2.8,
+        Some(vec!["hi".to_string()]),
+        "cat pic",
     );
-    println!("Hello, world!, {}", res);
+
+    let app = Router::new()
+        .route("/", get(home))
+        .route("/restaurants", get(create_restaurant));
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:4444").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
+async fn home() -> &'static str {
+    "Restaurant Api \n\nEndpoints: \n\n/restaurant/id\n/restaurants\n\nUNDER DEVELOPMENT!"
+}
+
+async fn create_restaurant() -> impl IntoResponse {
+    let data = Restaurant::new(
+        RestaurantId(1.to_string()),
+        "sigma",
+        2.2,
+        2.8,
+        Some(vec!["hi".to_string()]),
+        "cat pic",
+    );
+    let json = to_string_pretty(&data).unwrap();
+    (axum::http::StatusCode::OK, json).into_response()
+}
+
+// async fn restaurants() -> String {
+
+// }
 // 52
