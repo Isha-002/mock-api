@@ -9,3 +9,7 @@ axum = "*"
 serde = { version = "*", features = ["derive"]}
 serde_json = "*"
 tower = "*"
+
+[dev-dependencies]
+anyhow = "*"
+httpc-test = "0.1.1"
