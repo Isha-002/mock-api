@@ -5,11 +5,16 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "*", features = ["full"]}
-axum = "*"
 serde = { version = "*", features = ["derive"]}
 serde_json = "*"
-tower = "*"
+warp = "*"
+
 
 [dev-dependencies]
 anyhow = "*"
-httpc-test = "0.1.1"
+criterion = { version = "0.5" }
+
+
+[[bench]]
+name = "benchmark"
+harness = false

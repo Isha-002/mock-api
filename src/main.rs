@@ -1,8 +1,7 @@
-use axum::extract::Path;
-use axum::routing::post;
-use axum::{response::IntoResponse, routing::get, Router};
+
 use serde::{Deserialize, Serialize};
 use serde_json::to_string_pretty;
+use warp::Filter;
 use std::{
     fmt::{self},
     io::{Error, ErrorKind},
@@ -80,17 +79,11 @@ impl FromStr for RestaurantId {
 
 #[tokio::main]
 async fn main() {
+
     let _data: Vec<Restaurant> = vec![];
 
-    let app = Router::new()
-        .route("/", get(home))
-        .route("/restaurants", get(get_restaurants))
-        .route("/restaurant", post(create_restaurant))
-        .route("/restaurant/:id", get(get_restaurant));
-
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:4444").await.unwrap();
-    println!("Listening on: http://localhost:4444/");
-    axum::serve(listener, app).await.unwrap();
+    let home = warp::get().map(|| "home");
+    warp::serve(home).run(([0,0,0,0], 4444)).await;
 }
 
 async fn home() -> &'static str {
@@ -98,46 +91,46 @@ async fn home() -> &'static str {
 }
 
 async fn create_restaurant() {
-
+    
 }
 
-async fn get_restaurants() -> impl IntoResponse {
-    let data = vec![
-        Restaurant::new(
-            RestaurantId(1.to_string()),
-            "akbar joje",
-            4.8,
-            2.8,
-            Some(vec!["joje".to_string(), "akbar".to_string()]),
-            "img-url",
-        ),
-        Restaurant::new(
-            RestaurantId(2.to_string()),
-            "akbar not joje",
-            4.7,
-            2.8,
-            Some(vec!["no joje".to_string(), "big akbar".to_string()]),
-            "img-url",
-        ),
-        Restaurant::new(
-            RestaurantId(3.to_string()),
-            "akbar very joje",
-            2.2,
-            2.8,
-            Some(vec!["very joje".to_string(), "very akbar".to_string()]),
-            "img-url",
-        ),
-    ];
+// async fn get_restaurants() -> impl IntoResponse {
+//     let data = vec![
+//         Restaurant::new(
+//             RestaurantId(1.to_string()),
+//             "akbar joje",
+//             4.8,
+//             2.8,
+//             Some(vec!["joje".to_string(), "akbar".to_string()]),
+//             "img-url",
+//         ),
+//         Restaurant::new(
+//             RestaurantId(2.to_string()),
+//             "akbar not joje",
+//             4.7,
+//             2.8,
+//             Some(vec!["no joje".to_string(), "big akbar".to_string()]),
+//             "img-url",
+//         ),
+//         Restaurant::new(
+//             RestaurantId(3.to_string()),
+//             "akbar very joje",
+//             2.2,
+//             2.8,
+//             Some(vec!["very joje".to_string(), "very akbar".to_string()]),
+//             "img-url",
+//         ),
+//     ];
 
-    let json = to_string_pretty(&data).unwrap();
-    (axum::http::StatusCode::OK, json).into_response()
-}
+//     let json = to_string_pretty(&data).unwrap();
+//     (axum::http::StatusCode::OK, json).into_response()
+// }
 
-async fn get_restaurant(Path(id): Path<String>) -> impl IntoResponse {
-    format!("restaurant id: {id}")
-}
+// async fn get_restaurant(Path(id): Path<String>) -> impl IntoResponse {
+//     format!("restaurant id: {id}")
+// }
 
-// page: 66
+// page: 83
 
 // goals
 
@@ -146,4 +139,6 @@ async fn get_restaurant(Path(id): Path<String>) -> impl IntoResponse {
 // restaurant/id returns a json with specific id (❌)
 
 // issues
-// tests dont work
+
+// tests 
+// benchmark
