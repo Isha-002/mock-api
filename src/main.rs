@@ -1,6 +1,5 @@
 
 use serde::{Deserialize, Serialize};
-use serde_json::to_string_pretty;
 use warp::Filter;
 use std::{
     fmt::{self},
@@ -82,8 +81,9 @@ async fn main() {
 
     let _data: Vec<Restaurant> = vec![];
 
-    let home = warp::get().map(|| "home");
-    warp::serve(home).run(([0,0,0,0], 4444)).await;
+    // let home = warp::path("/").map(|| "home".to_string());
+    let res = warp::get().and(warp::path("restaurants")).and(warp::path::end()).and_then(get_restaurants);
+    warp::serve(res).run(([0, 0, 0, 0], 4444)).await;
 }
 
 async fn home() -> &'static str {
@@ -92,6 +92,36 @@ async fn home() -> &'static str {
 
 async fn create_restaurant() {
     
+}
+
+async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
+        let data = vec![
+        Restaurant::new(
+            RestaurantId(1.to_string()),
+            "akbar joje",
+            4.8,
+            2.8,
+            Some(vec!["joje".to_string(), "akbar".to_string()]),
+            "img-url",
+        ),
+        Restaurant::new(
+            RestaurantId(2.to_string()),
+            "akbar not joje",
+            4.7,
+            2.8,
+            Some(vec!["no joje".to_string(), "big akbar".to_string()]),
+            "img-url",
+        ),
+        Restaurant::new(
+            RestaurantId(3.to_string()),
+            "akbar very joje",
+            2.2,
+            2.8,
+            Some(vec!["very joje".to_string(), "very akbar".to_string()]),
+            "img-url",
+        ),
+    ];
+    Ok(warp::reply::json(&data))
 }
 
 // async fn get_restaurants() -> impl IntoResponse {
