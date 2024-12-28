@@ -1,11 +1,17 @@
 
 use serde::{Deserialize, Serialize};
-use warp::Filter;
+use warp::{reject::Reject, Filter};
 use std::{
     fmt::{self},
     io::{Error, ErrorKind},
     str::FromStr,
 };
+
+#[derive(Debug)]
+struct InvalidID;
+impl Reject for InvalidID {}
+
+
 
 #[derive(Serialize, Deserialize)]
 struct Restaurant {
@@ -94,6 +100,25 @@ async fn create_restaurant() {
     
 }
 
+async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
+    let d = Restaurant::new(
+        RestaurantId(1.to_string()),
+        "akbar joje",
+        4.8,
+        2.8,
+        Some(vec!["joje".to_string(), "akbar".to_string()]),
+        "img-url",
+    );
+    match  d.id.0.parse::<u32>() {
+        Err(_) => {
+            Err(warp::reject::custom(InvalidID))
+        }, 
+        Ok(_) => {
+            Ok(warp::reply::json(&d))
+        }
+    }
+}
+
 async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
         let data = vec![
         Restaurant::new(
@@ -124,43 +149,8 @@ async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
     Ok(warp::reply::json(&data))
 }
 
-// async fn get_restaurants() -> impl IntoResponse {
-//     let data = vec![
-//         Restaurant::new(
-//             RestaurantId(1.to_string()),
-//             "akbar joje",
-//             4.8,
-//             2.8,
-//             Some(vec!["joje".to_string(), "akbar".to_string()]),
-//             "img-url",
-//         ),
-//         Restaurant::new(
-//             RestaurantId(2.to_string()),
-//             "akbar not joje",
-//             4.7,
-//             2.8,
-//             Some(vec!["no joje".to_string(), "big akbar".to_string()]),
-//             "img-url",
-//         ),
-//         Restaurant::new(
-//             RestaurantId(3.to_string()),
-//             "akbar very joje",
-//             2.2,
-//             2.8,
-//             Some(vec!["very joje".to_string(), "very akbar".to_string()]),
-//             "img-url",
-//         ),
-//     ];
 
-//     let json = to_string_pretty(&data).unwrap();
-//     (axum::http::StatusCode::OK, json).into_response()
-// }
-
-// async fn get_restaurant(Path(id): Path<String>) -> impl IntoResponse {
-//     format!("restaurant id: {id}")
-// }
-
-// page: 83
+// page: 91
 
 // goals
 
