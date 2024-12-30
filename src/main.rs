@@ -1,17 +1,14 @@
-
 use serde::{Deserialize, Serialize};
-use warp::{reject::Reject, Filter};
 use std::{
     fmt::{self},
     io::{Error, ErrorKind},
     str::FromStr,
 };
+use warp::{reject::{Reject, Rejection}, reply::Reply, Filter};
 
 #[derive(Debug)]
 struct InvalidID;
 impl Reject for InvalidID {}
-
-
 
 #[derive(Serialize, Deserialize)]
 struct Restaurant {
@@ -84,21 +81,34 @@ impl FromStr for RestaurantId {
 
 #[tokio::main]
 async fn main() {
-
     let _data: Vec<Restaurant> = vec![];
 
     // let home = warp::path("/").map(|| "home".to_string());
-    let res = warp::get().and(warp::path("restaurants")).and(warp::path::end()).and_then(get_restaurants);
+    let res = warp::get()
+        .and(warp::path("restaurants"))
+        .and(warp::path::end())
+        .and_then(get_restaurants)
+        .recover(return_error);
     warp::serve(res).run(([0, 0, 0, 0], 4444)).await;
 }
+
+async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
+    if let Some(InvalidID) = r.find() {
+        Ok(warp::reply::with_status("no valid ID", warp::http::StatusCode::UNPROCESSABLE_ENTITY))
+    } else {
+        Ok(warp::reply::with_status(
+            "Route not found",
+            warp::http::StatusCode::NOT_FOUND,
+            ))
+    }
+}
+
 
 async fn home() -> &'static str {
     "Restaurant Api \n\nEndpoints: \n\n/restaurant/id\n/restaurants\n\nUNDER DEVELOPMENT!"
 }
 
-async fn create_restaurant() {
-    
-}
+async fn create_restaurant() {}
 
 async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
     let d = Restaurant::new(
@@ -109,18 +119,14 @@ async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
         Some(vec!["joje".to_string(), "akbar".to_string()]),
         "img-url",
     );
-    match  d.id.0.parse::<u32>() {
-        Err(_) => {
-            Err(warp::reject::custom(InvalidID))
-        }, 
-        Ok(_) => {
-            Ok(warp::reply::json(&d))
-        }
+    match d.id.0.parse::<u32>() {
+        Err(_) => Err(warp::reject::custom(InvalidID)),
+        Ok(_) => Ok(warp::reply::json(&d)),
     }
 }
 
 async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
-        let data = vec![
+    let data = vec![
         Restaurant::new(
             RestaurantId(1.to_string()),
             "akbar joje",
@@ -149,8 +155,7 @@ async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
     Ok(warp::reply::json(&data))
 }
 
-
-// page: 91
+// page: 94 3.3
 
 // goals
 
@@ -160,5 +165,5 @@ async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
 
 // issues
 
-// tests 
+// tests
 // benchmark
