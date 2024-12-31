@@ -1,10 +1,87 @@
+use core::option::Option::Some;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::{
     fmt::{self},
     io::{Error, ErrorKind},
     str::FromStr,
 };
-use warp::{reject::{Reject, Rejection}, reply::Reply, Filter};
+use warp::{
+    filters::cors::CorsForbidden,
+    http::Method,
+    reject::{Reject, Rejection},
+    reply::Reply,
+    Filter,
+};
+
+struct Store {
+    restaurants: HashMap<RestaurantId, Restaurant>,
+}
+
+impl Store {
+    fn init(mut self) -> Self {
+        // this method will only work if your data structure is empty!!
+        // only use it if you want to initialize with mock data!!
+        let data = [
+            Restaurant::new(
+                RestaurantId(1.to_string()), 
+                "Akbar Joojeh", 
+                3.2, 
+                5.3, 
+                Some(vec![
+                    "akbar jooje".to_string(), 
+                    "Sos".to_string(), 
+                    "Berenj".to_string()
+                ]), 
+                "https://www.akbarjoojeh.com/wp-content/uploads/2020/02/IMG_20200205_104013_404-1024x768.jpg"
+            ),
+            Restaurant::new(
+                RestaurantId(2.to_string()), 
+                "Bodega", 
+                4.5, 
+                8.1, 
+                Some(vec![
+                    "Tacos".to_string(), 
+                    "Burritos".to_string(), 
+                    "Quesadillas".to_string()
+                ]), 
+                "https://www.lettersandsigns.com/wp-content/uploads/elementor/thumbs/Layered-Red-Black-Acrylic-Sign-Bodega-Restaurant-1-pzb6prcdrc5le6apypbx8u2667vq157h06y9m90q06.jpg"
+            ),
+            Restaurant::new(
+                RestaurantId(3.to_string()), 
+                "Maggie", 
+                2.8, 
+                3.2, 
+                Some(vec![
+                    "Pizza".to_string(), 
+                    "Pasta".to_string(), 
+                    "Salads".to_string()
+                ]), 
+                "https://www.lettersandsigns.com/wp-content/uploads/2020/06/custom-formed-plastic-letters-edge-paint-maggie.jpg"
+            ),
+        ];
+
+        if self.is_empty() {
+            for d in data {
+            self.restaurants.insert(d.id.clone(), d);
+        };
+        }
+        self
+        
+    }
+    fn new() -> Self {
+        Store {
+            restaurants: HashMap::new(),
+        }
+    }
+    fn add_restaurant(mut self, r: Restaurant) -> Self {
+        self.restaurants.insert(r.id.clone(), r);
+        self
+    }
+    fn is_empty(&self) -> bool {
+        self.restaurants.is_empty()
+    }
+}
 
 #[derive(Debug)]
 struct InvalidID;
@@ -20,7 +97,7 @@ struct Restaurant {
     image: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, Hash, PartialEq)]
 struct RestaurantId(String);
 
 impl Restaurant {
@@ -82,6 +159,10 @@ impl FromStr for RestaurantId {
 #[tokio::main]
 async fn main() {
     let _data: Vec<Restaurant> = vec![];
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_header("content-type")
+        .allow_methods([Method::GET, Method::PUT, Method::DELETE, Method::POST]);
 
     // let home = warp::path("/").map(|| "home".to_string());
     let res = warp::get()
@@ -89,20 +170,28 @@ async fn main() {
         .and(warp::path::end())
         .and_then(get_restaurants)
         .recover(return_error);
-    warp::serve(res).run(([0, 0, 0, 0], 4444)).await;
+    warp::serve(res.with(cors)).run(([0, 0, 0, 0], 4444)).await;
 }
 
 async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
-    if let Some(InvalidID) = r.find() {
-        Ok(warp::reply::with_status("no valid ID", warp::http::StatusCode::UNPROCESSABLE_ENTITY))
+    println!("{:?}", r);
+    if let Some(error) = r.find::<CorsForbidden>() {
+        Ok(warp::reply::with_status(
+            error.to_string(),
+            warp::http::StatusCode::FORBIDDEN,
+        ))
+    } else if let Some(InvalidID) = r.find() {
+        Ok(warp::reply::with_status(
+            "no valid ID".to_string(),
+            warp::http::StatusCode::UNPROCESSABLE_ENTITY,
+        ))
     } else {
         Ok(warp::reply::with_status(
-            "Route not found",
+            "Route not found".to_string(),
             warp::http::StatusCode::NOT_FOUND,
-            ))
+        ))
     }
 }
-
 
 async fn home() -> &'static str {
     "Restaurant Api \n\nEndpoints: \n\n/restaurant/id\n/restaurants\n\nUNDER DEVELOPMENT!"
@@ -155,15 +244,13 @@ async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
     Ok(warp::reply::json(&data))
 }
 
-// page: 94 3.3
+// p: 107
 
-// goals
+// goals:
+// - restaurants endpoint return a json of all the restaurants (✅ but its static data)
+// - restaurant endpoint accept POST requests and adding the result to restaurants endpoint (❌)
+// - restaurant/id returns a json with specific id (❌)
 
-// restaurants endpoint return a json of all the restaurants (✅ but its static data)
-// restaurant endpoint accept POST requests and adding the result to restaurants endpoint (❌)
-// restaurant/id returns a json with specific id (❌)
-
-// issues
-
-// tests
-// benchmark
+// issues:
+// - tests
+// - benchmark
