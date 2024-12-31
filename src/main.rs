@@ -14,69 +14,27 @@ use warp::{
     Filter,
 };
 
+#[derive(Serialize, Deserialize, Clone)]
 struct Store {
     restaurants: HashMap<RestaurantId, Restaurant>,
 }
 
 impl Store {
-    fn init(mut self) -> Self {
-        // this method will only work if your data structure is empty!!
-        // only use it if you want to initialize with mock data!!
-        let data = [
-            Restaurant::new(
-                RestaurantId(1.to_string()), 
-                "Akbar Joojeh", 
-                3.2, 
-                5.3, 
-                Some(vec![
-                    "akbar jooje".to_string(), 
-                    "Sos".to_string(), 
-                    "Berenj".to_string()
-                ]), 
-                "https://www.akbarjoojeh.com/wp-content/uploads/2020/02/IMG_20200205_104013_404-1024x768.jpg"
-            ),
-            Restaurant::new(
-                RestaurantId(2.to_string()), 
-                "Bodega", 
-                4.5, 
-                8.1, 
-                Some(vec![
-                    "Tacos".to_string(), 
-                    "Burritos".to_string(), 
-                    "Quesadillas".to_string()
-                ]), 
-                "https://www.lettersandsigns.com/wp-content/uploads/elementor/thumbs/Layered-Red-Black-Acrylic-Sign-Bodega-Restaurant-1-pzb6prcdrc5le6apypbx8u2667vq157h06y9m90q06.jpg"
-            ),
-            Restaurant::new(
-                RestaurantId(3.to_string()), 
-                "Maggie", 
-                2.8, 
-                3.2, 
-                Some(vec![
-                    "Pizza".to_string(), 
-                    "Pasta".to_string(), 
-                    "Salads".to_string()
-                ]), 
-                "https://www.lettersandsigns.com/wp-content/uploads/2020/06/custom-formed-plastic-letters-edge-paint-maggie.jpg"
-            ),
-        ];
-
-        if self.is_empty() {
-            for d in data {
-            self.restaurants.insert(d.id.clone(), d);
-        };
+    fn init() -> HashMap<RestaurantId, Restaurant> {
+        let mock_data = include_str!("../mock_data.json");
+        match serde_json::from_str(mock_data) {
+            Ok(data) => data,
+            Err(e) => {
+                println!("there was an error reading mock_data.json: {e}");
+                println!("initialized Empty...");
+                Store::new().restaurants
+            }
         }
-        self
-        
     }
     fn new() -> Self {
         Store {
             restaurants: HashMap::new(),
         }
-    }
-    fn add_restaurant(mut self, r: Restaurant) -> Self {
-        self.restaurants.insert(r.id.clone(), r);
-        self
     }
     fn is_empty(&self) -> bool {
         self.restaurants.is_empty()
@@ -87,7 +45,7 @@ impl Store {
 struct InvalidID;
 impl Reject for InvalidID {}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct Restaurant {
     id: RestaurantId,
     name: String,
@@ -158,7 +116,11 @@ impl FromStr for RestaurantId {
 
 #[tokio::main]
 async fn main() {
-    let _data: Vec<Restaurant> = vec![];
+
+    let store = Store::new();
+    let store_filter = warp::any().map(move || store.clone());
+
+
     let cors = warp::cors()
         .allow_any_origin()
         .allow_header("content-type")
@@ -168,8 +130,10 @@ async fn main() {
     let res = warp::get()
         .and(warp::path("restaurants"))
         .and(warp::path::end())
+        .and(store_filter)
         .and_then(get_restaurants)
         .recover(return_error);
+    println!("starting the server on http://localhost:4444/");
     warp::serve(res.with(cors)).run(([0, 0, 0, 0], 4444)).await;
 }
 
@@ -214,37 +178,12 @@ async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
     }
 }
 
-async fn get_restaurants() -> Result<impl warp::Reply, warp::Rejection> {
-    let data = vec![
-        Restaurant::new(
-            RestaurantId(1.to_string()),
-            "akbar joje",
-            4.8,
-            2.8,
-            Some(vec!["joje".to_string(), "akbar".to_string()]),
-            "img-url",
-        ),
-        Restaurant::new(
-            RestaurantId(2.to_string()),
-            "akbar not joje",
-            4.7,
-            2.8,
-            Some(vec!["no joje".to_string(), "big akbar".to_string()]),
-            "img-url",
-        ),
-        Restaurant::new(
-            RestaurantId(3.to_string()),
-            "akbar very joje",
-            2.2,
-            2.8,
-            Some(vec!["very joje".to_string(), "very akbar".to_string()]),
-            "img-url",
-        ),
-    ];
-    Ok(warp::reply::json(&data))
+async fn get_restaurants(store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
+    Ok(warp::reply::json(&res))
 }
 
-// p: 107
+// p: 112/4.1.4
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅ but its static data)
