@@ -1,5 +1,6 @@
 use core::option::Option::Some;
 use serde::{Deserialize, Serialize};
+use warp::filters::path::param;
 use std::collections::HashMap;
 use std::{
     fmt::{self},
@@ -14,20 +15,24 @@ use warp::{
     Filter,
 };
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct Store {
     restaurants: HashMap<RestaurantId, Restaurant>,
 }
 
 impl Store {
-    fn init() -> HashMap<RestaurantId, Restaurant> {
+    fn init() -> Self {
         let mock_data = include_str!("../mock_data.json");
         match serde_json::from_str(mock_data) {
-            Ok(data) => data,
+            Ok(data) => {
+                Store {
+                    restaurants: data
+                }
+            },
             Err(e) => {
                 println!("there was an error reading mock_data.json: {e}");
                 println!("initialized Empty...");
-                Store::new().restaurants
+                Store::new()
             }
         }
     }
@@ -45,7 +50,7 @@ impl Store {
 struct InvalidID;
 impl Reject for InvalidID {}
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct Restaurant {
     id: RestaurantId,
     name: String,
@@ -117,7 +122,8 @@ impl FromStr for RestaurantId {
 #[tokio::main]
 async fn main() {
 
-    let store = Store::new();
+    let store = Store::init();
+    // println!("{store:?}");
     let store_filter = warp::any().map(move || store.clone());
 
 
@@ -130,6 +136,7 @@ async fn main() {
     let res = warp::get()
         .and(warp::path("restaurants"))
         .and(warp::path::end())
+        .and(warp::query())
         .and(store_filter)
         .and_then(get_restaurants)
         .recover(return_error);
@@ -178,7 +185,23 @@ async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
     }
 }
 
-async fn get_restaurants(store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+async fn get_restaurants(mut params: HashMap<String, String>, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    let mut start: u32 = 0;
+    if !params.is_empty() {
+        for (k, v) in params.drain() {
+            if k.to_lowercase() == "start" {
+                match  v.parse::<u32>() {
+                    Ok(d) => start = d,
+                    Err(_) => {
+                        Ok::<warp::reply::Json>(warp::reply::json(&"invalid params")); // doesnt work
+                    }
+                }
+            }
+        }
+    }
+    println!("{start}");
+
+    println!("{:?}", params);
     let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
     Ok(warp::reply::json(&res))
 }
