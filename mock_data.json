@@ -5,36 +5,24 @@
       "name": "Akbar Joojeh",
       "rating": 3.2,
       "distance": 5.3,
-      "tags": [
-        "akbar jooje",
-        "Sos",
-        "Berenj"
-      ],
+      "tags": ["akbar jooje", "Sos", "Berenj"],
       "image": "https://www.akbarjoojeh.com/wp-content/uploads/2020/02/IMG_20200205_104013_404-1024x768.jpg"
-    },
-    "3": {
-      "id": "3",
-      "name": "Maggie",
-      "rating": 2.8,
-      "distance": 3.2,
-      "tags": [
-        "Pizza",
-        "Pasta",
-        "Salads"
-      ],
-      "image": "https://www.lettersandsigns.com/wp-content/uploads/2020/06/custom-formed-plastic-letters-edge-paint-maggie.jpg"
     },
     "2": {
       "id": "2",
       "name": "Bodega",
       "rating": 4.5,
       "distance": 8.1,
-      "tags": [
-        "Tacos",
-        "Burritos",
-        "Quesadillas"
-      ],
+      "tags": ["Tacos", "Burritos", "Quesadillas"],
       "image": "https://www.lettersandsigns.com/wp-content/uploads/elementor/thumbs/Layered-Red-Black-Acrylic-Sign-Bodega-Restaurant-1-pzb6prcdrc5le6apypbx8u2667vq157h06y9m90q06.jpg"
+    },
+    "3": {
+      "id": "3",
+      "name": "Maggie",
+      "rating": 2.8,
+      "distance": 3.2,
+      "tags": ["Pizza", "Pasta", "Salads"],
+      "image": "https://www.lettersandsigns.com/wp-content/uploads/2020/06/custom-formed-plastic-letters-edge-paint-maggie.jpg"
     }
   }
 }
