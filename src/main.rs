@@ -1,12 +1,13 @@
 use core::option::Option::Some;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::{
     fmt::{self},
     io::{Error, ErrorKind},
     str::FromStr,
 };
-use warp::filters::path::param;
+use tokio::sync::RwLock;
 use warp::{
     filters::cors::CorsForbidden,
     http::Method,
@@ -45,6 +46,7 @@ fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, Err
 enum Errors {
     parse_error(std::num::ParseIntError),
     missing_parameters,
+    unacceptable_parameters,
 }
 impl std::fmt::Display for Errors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -55,22 +57,27 @@ impl std::fmt::Display for Errors {
             Errors::missing_parameters => {
                 write!(f, "missing parameters")
             }
+            Errors::unacceptable_parameters => {
+                write!(f, "parameters are not acceptable")
+            }
         }
     }
 }
 
 impl Reject for Errors {}
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 struct Store {
-    restaurants: HashMap<RestaurantId, Restaurant>,
+    restaurants: Arc<RwLock<HashMap<RestaurantId, Restaurant>>>,
 }
 
 impl Store {
     fn init() -> Self {
         let mock_data = include_str!("../mock_data.json");
         match serde_json::from_str(mock_data) {
-            Ok(data) => Store { restaurants: data },
+            Ok(data) => Store {
+                restaurants: Arc::new(RwLock::new(data)),
+            },
             Err(e) => {
                 println!("there was an error reading mock_data.json: {e}");
                 println!("initialized Empty...");
@@ -80,11 +87,11 @@ impl Store {
     }
     fn new() -> Self {
         Store {
-            restaurants: HashMap::new(),
+            restaurants: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-    fn is_empty(&self) -> bool {
-        self.restaurants.is_empty()
+    async fn is_empty(&self) -> bool {
+        self.restaurants.read().await.is_empty()
     }
 }
 
@@ -164,7 +171,6 @@ impl FromStr for RestaurantId {
 #[tokio::main]
 async fn main() {
     let store = Store::init();
-    // println!("{store:?}");
     let store_filter = warp::any().map(move || store.clone());
 
     let cors = warp::cors()
@@ -172,16 +178,31 @@ async fn main() {
         .allow_header("content-type")
         .allow_methods([Method::GET, Method::PUT, Method::DELETE, Method::POST]);
 
-    // let home = warp::path("/").map(|| "home".to_string());
-    let res = warp::get()
+    let home = warp::get().and(warp::path::end()).and_then(home);
+
+    let get_restaurants = warp::get()
         .and(warp::path("restaurants"))
         .and(warp::path::end())
         .and(warp::query())
-        .and(store_filter)
+        .and(store_filter.clone())
         .and_then(get_restaurants)
         .recover(return_error);
+
+    let create_restaurant = warp::post()
+        .and(warp::path("restaurants"))
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and(warp::body::json())
+        .and_then(create_restaurant);
+
+    let routes = home
+        .or(get_restaurants)
+        .or(create_restaurant)
+        .with(cors)
+        .recover(return_error);
+
     println!("starting the server on http://localhost:4444/");
-    warp::serve(res.with(cors)).run(([0, 0, 0, 0], 4444)).await;
+    warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
 async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
@@ -209,11 +230,24 @@ async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
     }
 }
 
-async fn home() -> &'static str {
-    "Restaurant Api \n\nEndpoints: \n\n/restaurant/id\n/restaurants\n\nUNDER DEVELOPMENT!"
+async fn home() -> Result<impl warp::Reply, warp::Rejection> {
+    Ok(warp::reply::with_status("Restaurant Api \n\nEndpoints: \n\n/restaurants (get)\n/restaurants (post)\n/restaurants/id (get)\n\nUNDER DEVELOPMENT!", warp::http::StatusCode::OK))
 }
 
-async fn create_restaurant() {}
+async fn create_restaurant(
+    store: Store,
+    restaurant: Restaurant,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    store
+        .restaurants
+        .write()
+        .await
+        .insert(restaurant.id.clone(), restaurant);
+    Ok(warp::reply::with_status(
+        "restaurant added!",
+        warp::http::StatusCode::OK,
+    ))
+}
 
 async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
     let d = Restaurant::new(
@@ -236,16 +270,23 @@ async fn get_restaurants(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     if !params.is_empty() {
         let pagination = extract_pagination(params)?;
-        let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
-        let res = &res[pagination.start..pagination.end];
-        Ok(warp::reply::json(&res))
+        if pagination.start == 0
+            || pagination.end > store.restaurants.read().await.len()
+            || pagination.start > pagination.end
+        {
+            Err(warp::reject::custom(Errors::unacceptable_parameters))
+        } else {
+            let res: Vec<Restaurant> = store.restaurants.read().await.values().cloned().collect();
+            let res = &res[pagination.start - 1..pagination.end];
+            Ok(warp::reply::json(&res))
+        }
     } else {
-        let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
+        let res: Vec<Restaurant> = store.restaurants.read().await.values().cloned().collect();
         Ok(warp::reply::json(&res))
     }
 }
 
-// p: 118
+// p: 126
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅ but its static data)
