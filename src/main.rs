@@ -195,9 +195,10 @@ async fn main() {
         .and(warp::body::json())
         .and_then(create_restaurant);
 
-    let routes = home
+    let routes = 
+        create_restaurant
+        .or(home)
         .or(get_restaurants)
-        .or(create_restaurant)
         .with(cors)
         .recover(return_error);
 

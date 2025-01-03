@@ -8,13 +8,9 @@ tokio = { version = "*", features = ["full"]}
 serde = { version = "*", features = ["derive"]}
 serde_json = "*"
 warp = "*"
+restaurant_benches = { path = "restaurant_benches" }
 
 
-[dev-dependencies]
-# anyhow = "*" 
-criterion = { version = "0.5" }
 
 
-[[bench]]
-name = "benchmark"
-harness = false
+
