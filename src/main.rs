@@ -1,12 +1,12 @@
 use core::option::Option::Some;
 use serde::{Deserialize, Serialize};
-use warp::filters::path::param;
 use std::collections::HashMap;
 use std::{
     fmt::{self},
     io::{Error, ErrorKind},
     str::FromStr,
 };
+use warp::filters::path::param;
 use warp::{
     filters::cors::CorsForbidden,
     http::Method,
@@ -14,6 +14,52 @@ use warp::{
     reply::Reply,
     Filter,
 };
+
+#[derive(Debug)]
+struct Pagination {
+    start: usize,
+    end: usize,
+}
+
+fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, Errors> {
+    if params.contains_key("start") && params.contains_key("end") {
+        Ok(Pagination {
+            start: params
+                .get("start")
+                .unwrap()
+                .parse::<usize>()
+                .map_err(Errors::parse_error)?,
+            end: params
+                .get("end")
+                .unwrap()
+                .parse::<usize>()
+                .map_err(Errors::parse_error)?,
+        })
+    } else {
+        Err(Errors::missing_parameters)
+    }
+}
+
+#[derive(Debug)]
+#[allow(non_camel_case_types)]
+enum Errors {
+    parse_error(std::num::ParseIntError),
+    missing_parameters,
+}
+impl std::fmt::Display for Errors {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Errors::parse_error(ref err) => {
+                write!(f, "cannot parse parameters: {err}")
+            }
+            Errors::missing_parameters => {
+                write!(f, "missing parameters")
+            }
+        }
+    }
+}
+
+impl Reject for Errors {}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Store {
@@ -24,11 +70,7 @@ impl Store {
     fn init() -> Self {
         let mock_data = include_str!("../mock_data.json");
         match serde_json::from_str(mock_data) {
-            Ok(data) => {
-                Store {
-                    restaurants: data
-                }
-            },
+            Ok(data) => Store { restaurants: data },
             Err(e) => {
                 println!("there was an error reading mock_data.json: {e}");
                 println!("initialized Empty...");
@@ -121,11 +163,9 @@ impl FromStr for RestaurantId {
 
 #[tokio::main]
 async fn main() {
-
     let store = Store::init();
     // println!("{store:?}");
     let store_filter = warp::any().map(move || store.clone());
-
 
     let cors = warp::cors()
         .allow_any_origin()
@@ -146,7 +186,12 @@ async fn main() {
 
 async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
     println!("{:?}", r);
-    if let Some(error) = r.find::<CorsForbidden>() {
+    if let Some(error) = r.find::<Errors>() {
+        Ok(warp::reply::with_status(
+            error.to_string(),
+            warp::http::StatusCode::RANGE_NOT_SATISFIABLE,
+        ))
+    } else if let Some(error) = r.find::<CorsForbidden>() {
         Ok(warp::reply::with_status(
             error.to_string(),
             warp::http::StatusCode::FORBIDDEN,
@@ -185,28 +230,22 @@ async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
     }
 }
 
-async fn get_restaurants(mut params: HashMap<String, String>, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
-    let mut start: u32 = 0;
+async fn get_restaurants(
+    params: HashMap<String, String>,
+    store: Store,
+) -> Result<impl warp::Reply, warp::Rejection> {
     if !params.is_empty() {
-        for (k, v) in params.drain() {
-            if k.to_lowercase() == "start" {
-                match  v.parse::<u32>() {
-                    Ok(d) => start = d,
-                    Err(_) => {
-                        Ok::<warp::reply::Json>(warp::reply::json(&"invalid params")); // doesnt work
-                    }
-                }
-            }
-        }
+        let pagination = extract_pagination(params)?;
+        let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
+        let res = &res[pagination.start..pagination.end];
+        Ok(warp::reply::json(&res))
+    } else {
+        let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
+        Ok(warp::reply::json(&res))
     }
-    println!("{start}");
-
-    println!("{:?}", params);
-    let res: Vec<Restaurant> = store.restaurants.values().cloned().collect();
-    Ok(warp::reply::json(&res))
 }
 
-// p: 112/4.1.4
+// p: 118
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅ but its static data)
@@ -216,3 +255,4 @@ async fn get_restaurants(mut params: HashMap<String, String>, store: Store) -> R
 // issues:
 // - tests
 // - benchmark
+// - error handling
