@@ -48,6 +48,7 @@ enum Errors {
     missing_parameters,
     unacceptable_parameters,
     restaurant_not_found,
+    unkown_error
 }
 impl std::fmt::Display for Errors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -63,6 +64,9 @@ impl std::fmt::Display for Errors {
             }
             Errors::restaurant_not_found => {
                 write!(f, "restaurant not found")
+            }
+            Errors::unkown_error => {
+                write!(f, "something happened and we dont know what!")
             }
         }
     }
@@ -265,17 +269,19 @@ async fn get_single_restaurant(
     id: String,
     store: Store,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let _ = match id.parse::<u32>() {
-        Err(_) => Err(warp::reject::custom(InvalidID)),
-        Ok(_) => Ok(())
-    };
-
     let restaurant = store.restaurants.read().await;
-    match restaurant.get(&RestaurantId(id)) {
+    match restaurant.get(&RestaurantId(id.clone())) {
         Some(res) => Ok(warp::reply::json(res)),
-        None => Err(warp::reject::custom(Errors::restaurant_not_found)),
+        None => {
+            if id.parse::<u32>().is_err() {
+                Err(warp::reject::custom(InvalidID))
+            } else if !restaurant.contains_key(&RestaurantId(id)) {
+                Err(warp::reject::custom(Errors::restaurant_not_found))
+            } else {
+                Err(warp::reject::custom(Errors::unkown_error))
+            }
+        }
     }
-    
 }
 
 async fn get_restaurants(
