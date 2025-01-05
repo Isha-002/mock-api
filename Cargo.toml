@@ -8,7 +8,7 @@ tokio = { version = "*", features = ["full"]}
 serde = { version = "*", features = ["derive"]}
 serde_json = "*"
 warp = "*"
-restaurant_benches = { path = "restaurant_benches" }
+benches = { path = "benches" }
 
 
 

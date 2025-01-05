@@ -47,6 +47,7 @@ enum Errors {
     parse_error(std::num::ParseIntError),
     missing_parameters,
     unacceptable_parameters,
+    restaurant_not_found,
 }
 impl std::fmt::Display for Errors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -59,6 +60,9 @@ impl std::fmt::Display for Errors {
             }
             Errors::unacceptable_parameters => {
                 write!(f, "parameters are not acceptable")
+            }
+            Errors::restaurant_not_found => {
+                write!(f, "restaurant not found")
             }
         }
     }
@@ -185,8 +189,7 @@ async fn main() {
         .and(warp::path::end())
         .and(warp::query())
         .and(store_filter.clone())
-        .and_then(get_restaurants)
-        .recover(return_error);
+        .and_then(get_restaurants);
 
     let create_restaurant = warp::post()
         .and(warp::path("restaurants"))
@@ -195,10 +198,17 @@ async fn main() {
         .and(warp::body::json())
         .and_then(create_restaurant);
 
-    let routes = 
-        create_restaurant
+    let get_single_restaurant = warp::get()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<String>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(get_single_restaurant);
+
+    let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
+        .or(get_single_restaurant)
         .with(cors)
         .recover(return_error);
 
@@ -208,6 +218,7 @@ async fn main() {
 
 async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
     println!("{:?}", r);
+
     if let Some(error) = r.find::<Errors>() {
         Ok(warp::reply::with_status(
             error.to_string(),
@@ -250,19 +261,21 @@ async fn create_restaurant(
     ))
 }
 
-async fn get_single_restaurant() -> Result<impl warp::Reply, warp::Rejection> {
-    let d = Restaurant::new(
-        RestaurantId(1.to_string()),
-        "akbar joje",
-        4.8,
-        2.8,
-        Some(vec!["joje".to_string(), "akbar".to_string()]),
-        "img-url",
-    );
-    match d.id.0.parse::<u32>() {
+async fn get_single_restaurant(
+    id: String,
+    store: Store,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let _ = match id.parse::<u32>() {
         Err(_) => Err(warp::reject::custom(InvalidID)),
-        Ok(_) => Ok(warp::reply::json(&d)),
+        Ok(_) => Ok(())
+    };
+
+    let restaurant = store.restaurants.read().await;
+    match restaurant.get(&RestaurantId(id)) {
+        Some(res) => Ok(warp::reply::json(res)),
+        None => Err(warp::reject::custom(Errors::restaurant_not_found)),
     }
+    
 }
 
 async fn get_restaurants(
@@ -287,14 +300,17 @@ async fn get_restaurants(
     }
 }
 
-// p: 126
+// p: 127
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅ but its static data)
-// - restaurant endpoint accept POST requests and adding the result to restaurants endpoint (❌)
+// - restaurant endpoint accept POST requests and adding the result to restaurants endpoint (✅)
 // - restaurant/id returns a json with specific id (❌)
 
 // issues:
 // - tests
 // - benchmark
 // - error handling
+
+// as: 95
+//
