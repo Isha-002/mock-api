@@ -9,7 +9,7 @@ use std::{
 };
 use tokio::sync::RwLock;
 use warp::{
-    filters::cors::CorsForbidden,
+    filters::{body::BodyDeserializeError, cors::CorsForbidden},
     http::Method,
     reject::{Reject, Rejection},
     reply::Reply,
@@ -48,7 +48,7 @@ enum Errors {
     missing_parameters,
     unacceptable_parameters,
     restaurant_not_found,
-    unkown_error
+    unkown_error,
 }
 impl std::fmt::Display for Errors {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -209,10 +209,27 @@ async fn main() {
         .and(store_filter.clone())
         .and_then(get_single_restaurant);
 
+    let update_restaurant = warp::put()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<String>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and(warp::body::json())
+        .and_then(update_restaurant);
+
+    let delete_restaurant = warp::delete()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<String>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(delete_restaurant);
+
     let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
         .or(get_single_restaurant)
+        .or(update_restaurant)
+        .or(delete_restaurant)
         .with(cors)
         .recover(return_error);
 
@@ -236,6 +253,11 @@ async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
     } else if let Some(InvalidID) = r.find() {
         Ok(warp::reply::with_status(
             "no valid ID".to_string(),
+            warp::http::StatusCode::UNPROCESSABLE_ENTITY,
+        ))
+    } else if let Some(error) = r.find::<BodyDeserializeError>() {
+        Ok(warp::reply::with_status(
+            error.to_string(),
             warp::http::StatusCode::UNPROCESSABLE_ENTITY,
         ))
     } else {
@@ -306,16 +328,47 @@ async fn get_restaurants(
     }
 }
 
+async fn update_restaurant(
+    id: String,
+    store: Store,
+    restaurant: Restaurant,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let _ = match store.restaurants.write().await.get_mut(&RestaurantId(id)) {
+        Some(r) => {
+            *r = restaurant;
+            Ok::<(), Errors>(())
+        }
+        None => return Err(warp::reject::custom(Errors::restaurant_not_found)),
+    };
+
+    Ok(warp::reply::with_status(
+        "restaurant modified",
+        warp::http::StatusCode::OK,
+    ))
+}
+
+async fn delete_restaurant(id: String, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    match store.restaurants.write().await.remove(&RestaurantId(id)) {
+        Some(_) => Ok(warp::reply::with_status(
+            "restaurant deleted",
+            warp::http::StatusCode::OK,
+        )),
+        None => Err(warp::reject::custom(Errors::restaurant_not_found)),
+    }
+}
+
 // p: 127
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅ but its static data)
 // - restaurant endpoint accept POST requests and adding the result to restaurants endpoint (✅)
-// - restaurant/id returns a json with specific id (❌)
+// - restaurant/id returns a json with specific id (✅)
+// - restaurant/id accept PUT requests and update the restaurant (❌)
+// - restaurant/id accept DELETE requests and delete the restaurant (❌)
 
 // issues:
 // - tests
-// - benchmark
+// - benchmark (✅)
 // - error handling
 
 // as: 95
