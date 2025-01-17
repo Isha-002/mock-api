@@ -2,6 +2,10 @@ use std::collections::HashMap;
 
 use crate::error::Error;
 
+/// # Paginatio:
+/// this struct extract query paramaeters
+/// Extract query parameters from the `/restaurants` route
+/// `/restaurants?start=1&end=10`
 #[derive(Debug)]
 pub struct Pagination {
     pub start: usize,

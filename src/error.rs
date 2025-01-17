@@ -5,6 +5,11 @@ use warp::{
     reply::Reply,
 };
 
+/// # How errors work 
+/// 1. adding an specific error to the enum Error
+/// 2. create a `fmt::Display` implementation for that enum
+/// 3. return a `write!` macro with your custom error message
+
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
 pub enum Error {

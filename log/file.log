@@ -1,0 +1,1 @@
+{"time":"2025-01-17T22:31:13.083182500+03:30","level":"INFO","message":"GET - 200 OK - 58.9µs from 127.0.0.1:7146","module_path":"mock_api","file":"src\\main.rs","line":21,"target":"mock_api","thread":"tokio-runtime-worker","thread_id":25536,"mdc":{}}

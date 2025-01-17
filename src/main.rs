@@ -1,13 +1,11 @@
-
+use log::info;
 use routes::home::home;
-use routes::restaurants::{create_restaurant, delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant};
+use routes::restaurants::{
+    create_restaurant, delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant,
+};
 use store::Store;
 
-
-use warp::{
-    http::Method,
-    Filter,
-};
+use warp::{http::Method, Filter};
 mod error;
 mod routes;
 mod store;
@@ -15,9 +13,20 @@ mod types;
 
 use error::return_error;
 
-
 #[tokio::main]
 async fn main() {
+    log4rs::init_file("logger.yml", Default::default()).unwrap();
+
+    let log = warp::log::custom(|info| {
+        info!(
+            "{} - {} - {:?} from {}",
+            info.method(),
+            info.status(),
+            info.elapsed(),
+            info.remote_addr().unwrap(),
+        );
+    });
+
     let store = Store::init();
     let store_filter = warp::any().map(move || store.clone());
 
@@ -71,13 +80,14 @@ async fn main() {
         .or(update_restaurant)
         .or(delete_restaurant)
         .with(cors)
+        .with(log)
         .recover(return_error);
 
     println!("starting the server on http://localhost:4444/");
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// p: 127
+// p: 182
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅)
@@ -90,6 +100,3 @@ async fn main() {
 // - tests
 // - benchmark (✅)
 // - error handling
-
-// as: 95
-//
