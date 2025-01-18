@@ -19,16 +19,18 @@ async fn main() {
 
     let log = warp::log::custom(|info| {
         info!(
-            "{} - {} - {:?} from {}",
+            "[{}] - [{}] - [{:?}] from: [{}] - host: [{:?}]",
             info.method(),
             info.status(),
             info.elapsed(),
             info.remote_addr().unwrap(),
+            info.host().unwrap(),
         );
     });
 
     let store = Store::init();
     let store_filter = warp::any().map(move || store.clone());
+    let id_filter = warp::any().map(|| uuid::Uuid::new_v4().to_string());
 
     let cors = warp::cors()
         .allow_any_origin()
@@ -42,6 +44,7 @@ async fn main() {
         .and(warp::path::end())
         .and(warp::query())
         .and(store_filter.clone())
+        .and(id_filter)
         .and_then(get_restaurants);
 
     let create_restaurant = warp::post()

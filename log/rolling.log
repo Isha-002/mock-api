@@ -1,3 +1,28 @@
-{"time":"2025-01-17T22:29:47.787562200+03:30","level":"INFO","message":"Server::run; addr=0.0.0.0:4444","module_path":"warp::server","file":"C:\\Users\\L9 Akshan\\.cargo\\registry\\src\\index.crates.io-6f17d22bba15001f\\warp-0.3.7\\src\\server.rs","line":137,"target":"warp::server","thread":"main","thread_id":17872,"mdc":{}}
-{"time":"2025-01-17T22:29:47.787967500+03:30","level":"INFO","message":"listening on http://0.0.0.0:4444","module_path":"warp::server","file":"C:\\Users\\L9 Akshan\\.cargo\\registry\\src\\index.crates.io-6f17d22bba15001f\\warp-0.3.7\\src\\server.rs","line":138,"target":"warp::server","thread":"main","thread_id":17872,"mdc":{}}
-{"time":"2025-01-17T22:31:13.083245400+03:30","level":"INFO","message":"GET - 200 OK - 58.9µs from 127.0.0.1:7146","module_path":"mock_api","file":"src\\main.rs","line":21,"target":"mock_api","thread":"tokio-runtime-worker","thread_id":25536,"mdc":{}}
+2025-01-18T17:37:05.516416600+03:30 INFO warp::server - Server::run; addr=0.0.0.0:4444
+2025-01-18T17:37:05.516660400+03:30 INFO warp::server - listening on http://0.0.0.0:4444
+2025-01-18T17:37:19.568624600+03:30 INFO warp::server - Server::run; addr=0.0.0.0:4444
+2025-01-18T17:37:19.568784500+03:30 INFO warp::server - listening on http://0.0.0.0:4444
+2025-01-18T17:37:27.297855200+03:30 INFO mock_api::routes::home - rout is called
+2025-01-18T17:37:27.300079700+03:30 INFO mock_api - [GET] - [200 OK] - [412.9µs] from: [127.0.0.1:6179] - host: ["localhost:4444"] - {
+    "host": "localhost:4444",
+    "connection": "keep-alive",
+    "cache-control": "max-age=0",
+    "sec-ch-ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "sec-fetch-site": "none",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-user": "?1",
+    "sec-fetch-dest": "document",
+    "accept-encoding": "gzip, deflate, br, zstd",
+    "accept-language": "en-US,en;q=0.9,fa;q=0.8",
+}
+2025-01-18T23:57:35.114436100+03:30 INFO warp::server - Server::run; addr=0.0.0.0:4444
+2025-01-18T23:57:35.114536200+03:30 INFO warp::server - listening on http://0.0.0.0:4444
+2025-01-19T00:00:46.837769700+03:30 INFO mock_api::routes::home - rout is called
+2025-01-19T00:00:46.837889700+03:30 INFO mock_api - [GET] - [200 OK] - [315.4µs] from: [127.0.0.1:11265] - host: ["localhost:4444"]
+2025-01-19T00:00:53.606959500+03:30 INFO mock_api::routes::restaurants - [c7575d59-f06d-475b-8617-90bcbbcda750] Start querying restaurants
+2025-01-19T00:00:53.607431+03:30 INFO mock_api - [GET] - [200 OK] - [572.8µs] from: [127.0.0.1:11265] - host: ["localhost:4444"]

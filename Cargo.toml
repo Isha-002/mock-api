@@ -11,7 +11,7 @@ warp = "0.3.7"
 benches = { path = "benches" }
 log = "0.4"
 log4rs = { version= "1.3", features = ["console_appender", "file_appender", "rolling_file_appender"]}
-
+uuid = { version = "0.8", features = ["v4"] }
 
 
 

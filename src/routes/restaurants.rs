@@ -46,15 +46,20 @@ pub async fn get_single_restaurant(
 pub async fn get_restaurants(
     params: HashMap<String, String>,
     store: Store,
+    id: String
 ) -> Result<impl warp::Reply, warp::Rejection> {
+    log::info!("[{id}] Start querying restaurants");
     if !params.is_empty() {
         let pagination = extract_pagination(params)?;
+        log::info!("[{id}] Pagination set {:?}", &pagination);
         if pagination.start == 0
             || pagination.end > store.restaurants.read().await.len()
             || pagination.start > pagination.end
         {
+            log::warn!("[{id}] unacceptable params used");
             Err(warp::reject::custom(Error::unacceptable_parameters))
         } else {
+            log::info!("[{id}] No pagination used");
             let res: Vec<Restaurant> = store.restaurants.read().await.values().cloned().collect();
             let res = &res[pagination.start - 1..pagination.end];
             Ok(warp::reply::json(&res))
