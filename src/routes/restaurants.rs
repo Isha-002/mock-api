@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use tracing::{info, instrument};
+
 use crate::{
     error::{Error, InvalidID},
     store::Store,
@@ -42,29 +44,28 @@ pub async fn get_single_restaurant(
         }
     }
 }
-
+#[instrument]
 pub async fn get_restaurants(
     params: HashMap<String, String>,
     store: Store,
-    id: String
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    log::info!("[{id}] Start querying restaurants");
+    info!("querying questions");
     if !params.is_empty() {
         let pagination = extract_pagination(params)?;
-        log::info!("[{id}] Pagination set {:?}", &pagination);
         if pagination.start == 0
             || pagination.end > store.restaurants.read().await.len()
             || pagination.start > pagination.end
         {
-            log::warn!("[{id}] unacceptable params used");
+            info!(pagination = false);
             Err(warp::reject::custom(Error::unacceptable_parameters))
         } else {
-            log::info!("[{id}] No pagination used");
+            info!(pagination = true);
             let res: Vec<Restaurant> = store.restaurants.read().await.values().cloned().collect();
             let res = &res[pagination.start - 1..pagination.end];
             Ok(warp::reply::json(&res))
         }
     } else {
+        info!(pagination = false);
         let res: Vec<Restaurant> = store.restaurants.read().await.values().cloned().collect();
         Ok(warp::reply::json(&res))
     }

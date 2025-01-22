@@ -1,6 +1,0 @@
-2025-01-18T23:57:35.114378300+03:30 INFO warp::server - Server::run; addr=0.0.0.0:4444
-2025-01-18T23:57:35.114526800+03:30 INFO warp::server - listening on http://0.0.0.0:4444
-2025-01-19T00:00:46.837731200+03:30 INFO mock_api::routes::home - rout is called
-2025-01-19T00:00:46.837878600+03:30 INFO mock_api - [GET] - [200 OK] - [315.4µs] from: [127.0.0.1:11265] - host: ["localhost:4444"]
-2025-01-19T00:00:53.606931200+03:30 INFO mock_api::routes::restaurants - [c7575d59-f06d-475b-8617-90bcbbcda750] Start querying restaurants
-2025-01-19T00:00:53.607397600+03:30 INFO mock_api - [GET] - [200 OK] - [572.8µs] from: [127.0.0.1:11265] - host: ["localhost:4444"]

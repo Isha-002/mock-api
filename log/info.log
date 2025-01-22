@@ -1,0 +1,6 @@
+22/01/2025 20:36:11  INFO Server::run: [message: listening on http://0.0.0.0:4444] [addr: 0.0.0.0:4444]
+22/01/2025 20:36:24  INFO request: [message: processing request] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:6510]
+22/01/2025 20:36:24  INFO request: [message: processing request] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:6510]
+22/01/2025 20:36:24  INFO request: [message: finished processing with success] - [status: 200] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:6510]
+22/01/2025 20:36:24  INFO request: [message: finished processing with success] - [status: 200] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:6510]
+22/01/2025 20:36:24  INFO request: [message: "close"] - [time.busy: 430µs] - [time.idle: 75.4µs] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:6510]

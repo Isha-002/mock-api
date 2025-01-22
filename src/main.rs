@@ -1,36 +1,52 @@
-use log::info;
+
 use routes::home::home;
 use routes::restaurants::{
     create_restaurant, delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant,
 };
+use tracing_subscriber::field::MakeExt;
+use tracing_subscriber::fmt::format;
+
+use types::timer::CustomTimer;
+use std::fs::File;
 use store::Store;
 
+use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{http::Method, Filter};
 mod error;
 mod routes;
 mod store;
 mod types;
-
 use error::return_error;
+
+
+
 
 #[tokio::main]
 async fn main() {
-    log4rs::init_file("logger.yml", Default::default()).unwrap();
+    let timer = CustomTimer;
 
-    let log = warp::log::custom(|info| {
-        info!(
-            "[{}] - [{}] - [{:?}] from: [{}] - host: [{:?}]",
-            info.method(),
-            info.status(),
-            info.elapsed(),
-            info.remote_addr().unwrap(),
-            info.host().unwrap(),
-        );
-    });
+    let file = File::create("log/info.log").expect("couldn't create the log file");
+    let (none_blocking, _worker_guard) = tracing_appender::non_blocking(file);
+
+    let log_filter =
+        std::env::var("RUST_LOG").unwrap_or_else(|_| "mock-api=info,warp=info".to_owned());
+    tracing_subscriber::fmt()
+        .with_timer(timer)
+        .with_writer(none_blocking)
+        .with_ansi(false)
+        .with_env_filter(log_filter)
+        .with_span_events(FmtSpan::CLOSE)
+        .with_target(false)
+        .with_thread_ids(false)
+        .with_thread_names(false).compact().fmt_fields(format::debug_fn(|writer, field, value| {
+            write!(writer, "[{}: {:?}]", field, value)
+        })
+
+        .delimited(" - "))
+        .init();
 
     let store = Store::init();
     let store_filter = warp::any().map(move || store.clone());
-    let id_filter = warp::any().map(|| uuid::Uuid::new_v4().to_string());
 
     let cors = warp::cors()
         .allow_any_origin()
@@ -44,8 +60,15 @@ async fn main() {
         .and(warp::path::end())
         .and(warp::query())
         .and(store_filter.clone())
-        .and(id_filter)
-        .and_then(get_restaurants);
+        .and_then(get_restaurants)
+        .with(warp::trace(|info| {
+            tracing::info_span!(
+                "get restaurants request",
+                method = %info.method(),
+                path = %info.path(),
+                id = %uuid::Uuid::new_v4(),
+            )
+        }));
 
     let create_restaurant = warp::post()
         .and(warp::path("restaurants"))
@@ -83,14 +106,14 @@ async fn main() {
         .or(update_restaurant)
         .or(delete_restaurant)
         .with(cors)
-        .with(log)
+        .with(warp::trace::request())
         .recover(return_error);
 
     println!("starting the server on http://localhost:4444/");
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// p: 182
+// p: 190
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅)
