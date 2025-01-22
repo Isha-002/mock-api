@@ -7,7 +7,7 @@ use tracing_subscriber::field::MakeExt;
 use tracing_subscriber::fmt::format;
 
 use types::timer::CustomTimer;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use store::Store;
 
 use tracing_subscriber::fmt::format::FmtSpan;
@@ -25,7 +25,11 @@ use error::return_error;
 async fn main() {
     let timer = CustomTimer;
 
-    let file = File::create("log/info.log").expect("couldn't create the log file");
+    let file = OpenOptions::new()
+    .create(true) 
+    .append(true)  
+    .open("log/info.log")
+    .expect("couldn't open or create the log file");
     let (none_blocking, _worker_guard) = tracing_appender::non_blocking(file);
 
     let log_filter =
