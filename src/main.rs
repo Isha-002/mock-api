@@ -1,4 +1,3 @@
-
 use routes::home::home;
 use routes::restaurants::{
     create_restaurant, delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant,
@@ -7,7 +6,7 @@ use tracing_subscriber::field::MakeExt;
 use tracing_subscriber::fmt::format;
 
 use types::timer::CustomTimer;
-use std::fs::{File, OpenOptions};
+use std::fs::{create_dir_all, OpenOptions};
 use store::Store;
 
 use tracing_subscriber::fmt::format::FmtSpan;
@@ -25,6 +24,7 @@ use error::return_error;
 async fn main() {
     let timer = CustomTimer;
 
+    create_dir_all("log").expect("failed to create log directory");
     let file = OpenOptions::new()
     .create(true) 
     .append(true)  
@@ -83,14 +83,14 @@ async fn main() {
 
     let get_single_restaurant = warp::get()
         .and(warp::path("restaurants"))
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<i32>())
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(get_single_restaurant);
 
     let update_restaurant = warp::put()
         .and(warp::path("restaurants"))
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<i32>())
         .and(warp::path::end())
         .and(store_filter.clone())
         .and(warp::body::json())
@@ -98,7 +98,7 @@ async fn main() {
 
     let delete_restaurant = warp::delete()
         .and(warp::path("restaurants"))
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<i32>())
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(delete_restaurant);
@@ -117,7 +117,7 @@ async fn main() {
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// p: 190
+// p: 209
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅)

@@ -13,7 +13,8 @@ uuid = { version = "1.0.0", features = ["v4"]}
 tracing = { version = "0.1", features = ["log"]}
 tracing-subscriber = { version = "0.3", features = ["env-filter"]}
 tracing-appender = "0.2"
-chrono ={ version = "0.4.39"}
+chrono = { version = "0.4.39"}
+sqlx = { version = "0.8.0", features = [ "runtime-tokio-rustls", "migrate", "postgres" ] } 
 
 
 

@@ -54,7 +54,6 @@ impl fmt::Display for InvalidID {
 }
 
 pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
-    println!("{:?}", r);
 
     if let Some(error) = r.find::<Error>() {
         Ok(warp::reply::with_status(

@@ -1,27 +1,185 @@
-  {
-    "1": {
-      "id": "1",
-      "name": "Akbar Joojeh",
-      "rating": 3.2,
-      "distance": 5.3,
-      "tags": ["akbar jooje", "Sos", "Berenj"],
-      "image": "https://www.akbarjoojeh.com/wp-content/uploads/2020/02/IMG_20200205_104013_404-1024x768.jpg"
-    },
-    "2": {
-      "id": "2",
-      "name": "Bodega",
-      "rating": 4.5,
-      "distance": 8.1,
-      "tags": ["Tacos", "Burritos", "Quesadillas"],
-      "image": "https://www.lettersandsigns.com/wp-content/uploads/elementor/thumbs/Layered-Red-Black-Acrylic-Sign-Bodega-Restaurant-1-pzb6prcdrc5le6apypbx8u2667vq157h06y9m90q06.jpg"
-    },
-    "3": {
-      "id": "3",
-      "name": "Maggie",
-      "rating": 2.8,
-      "distance": 3.2,
-      "tags": ["Pizza", "Pasta", "Salads"],
-      "image": "https://www.lettersandsigns.com/wp-content/uploads/2020/06/custom-formed-plastic-letters-edge-paint-maggie.jpg"
-    }
+{
+  "1": {
+    "id": 1,
+    "name": "Akbar Joojeh",
+    "rating": 3.2,
+    "distance": 5.3,
+    "menu": [
+      { "name": "joje", "price": 200, "ingredient": [], "available": true },
+      {
+        "name": "joje_small",
+        "price": 150,
+        "ingredient": [],
+        "available": true
+      },
+      { "name": "joje_big", "price": 300, "ingredient": [], "available": true },
+      {
+        "name": "joje_akbar",
+        "price": 500,
+        "ingredient": [],
+        "available": false
+      }
+    ],
+    "tags": ["akbar jooje", "Sos", "Berenj"],
+    "image": "https://www.akbarjoojeh.com/wp-content/uploads/2020/02/IMG_20200205_104013_404-1024x768.jpg"
+  },
+  "2": {
+    "id": 2,
+    "name": "Bodega",
+    "rating": 4.5,
+    "distance": 8.1,
+    "menu": [
+      {
+        "name": "Beef Tacos",
+        "price": 400,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Chicken Burrito",
+        "price": 500,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Cheese Quesadilla",
+        "price": 350,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Guacamole",
+        "price": 200,
+        "ingredient": [],
+        "available": false
+      }
+    ],
+    "tags": ["Tacos", "Burritos", "Quesadillas"],
+    "image": "https://www.lettersandsigns.com/wp-content/uploads/elementor/thumbs/Layered-Red-Black-Acrylic-Sign-Bodega-Restaurant-1-pzb6prcdrc5le6apypbx8u2667vq157h06y9m90q06.jpg"
+  },
+  "3": {
+    "id": 3,
+    "name": "Maggie",
+    "rating": 2.8,
+    "distance": 3.2,
+    "menu": [
+      {
+        "name": "Margherita Pizza",
+        "price": 700,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Spaghetti Carbonara",
+        "price": 600,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Caesar Salad",
+        "price": 400,
+        "ingredient": [],
+        "available": true
+      },
+      { "name": "Tiramisu", "price": 300, "ingredient": [], "available": false }
+    ],
+    "tags": ["Pizza", "Pasta", "Salads"],
+    "image": "https://www.lettersandsigns.com/wp-content/uploads/2020/06/custom-formed-plastic-letters-edge-paint-maggie.jpg"
+  },
+  "4": {
+    "id": 4,
+    "name": "Sushi Master",
+    "rating": 4.7,
+    "distance": 2.5,
+    "menu": [
+      {
+        "name": "Sashimi Combo",
+        "price": 1200,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Dragon Roll",
+        "price": 1800,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Unagi Don",
+        "price": 1500,
+        "ingredient": [],
+        "available": false
+      }
+    ],
+    "tags": ["Sushi", "Japanese", "Seafood"],
+    "image": "https://example.com/sushi-master.jpg"
+  },
+  "5": {
+    "id": 5,
+    "name": "Curry House",
+    "rating": 4.1,
+    "distance": 6.0,
+    "menu": [
+      {
+        "name": "Butter Chicken",
+        "price": 800,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Paneer Tikka Masala",
+        "price": 700,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Lamb Biryani",
+        "price": 1200,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Vegetable Samosa",
+        "price": 300,
+        "ingredient": [],
+        "available": false
+      }
+    ],
+    "tags": ["Indian", "Curry", "Vegetarian"],
+    "image": "https://example.com/curry-house.jpg"
+  },
+  "6": {
+    "id": 6,
+    "name": "Burger Palace",
+    "rating": 3.9,
+    "distance": 1.8,
+    "menu": [
+      {
+        "name": "Classic Cheeseburger",
+        "price": 600,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Bacon BBQ Burger",
+        "price": 850,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Veggie Burger",
+        "price": 500,
+        "ingredient": [],
+        "available": true
+      },
+      {
+        "name": "Truffle Fries",
+        "price": 300,
+        "ingredient": [],
+        "available": false
+      }
+    ],
+    "tags": ["Burgers", "American", "Fries"],
+    "image": "https://example.com/burger-palace.jpg"
   }
-
+}
