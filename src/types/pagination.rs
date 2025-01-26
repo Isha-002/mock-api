@@ -6,24 +6,24 @@ use crate::error::Error;
 /// this struct extract query paramaeters
 /// Extract query parameters from the `/restaurants` route
 /// `/restaurants?start=1&end=10`
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Pagination {
-    pub start: usize,
-    pub end: usize,
+    pub limit: Option<i32>,
+    pub offset: i32,
 }
 
 pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, Error> {
-    if params.contains_key("start") && params.contains_key("end") {
+    if params.contains_key("limit") && params.contains_key("offset") {
         Ok(Pagination {
-            start: params
-                .get("start")
+            limit: Some(params
+                .get("limit")
                 .unwrap()
-                .parse::<usize>()
-                .map_err(Error::parse_error)?,
-            end: params
-                .get("end")
+                .parse::<i32>()
+                .map_err(Error::parse_error)?),
+            offset: params
+                .get("offset")
                 .unwrap()
-                .parse::<usize>()
+                .parse::<i32>()
                 .map_err(Error::parse_error)?,
         })
     } else {

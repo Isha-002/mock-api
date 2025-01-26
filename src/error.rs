@@ -4,6 +4,7 @@ use warp::{
     reject::{Reject, Rejection},
     reply::Reply,
 };
+use sqlx::error::Error as SqlxError; 
 
 /// # How errors work 
 /// 1. adding an specific error to the enum Error
@@ -18,10 +19,11 @@ pub enum Error {
     unacceptable_parameters,
     restaurant_not_found,
     unkown_error,
+    database_query_error(SqlxError)
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
+        match self {
             Error::parse_error(ref err) => {
                 write!(f, "cannot parse parameters: {err}")
             }
@@ -36,6 +38,9 @@ impl std::fmt::Display for Error {
             }
             Error::unkown_error => {
                 write!(f, "something happened and we dont know what!")
+            }
+            Error::database_query_error(e) => {
+                write!(f, "could not execute query: {}", e)
             }
         }
     }

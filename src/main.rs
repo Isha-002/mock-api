@@ -1,7 +1,5 @@
 use routes::home::home;
-use routes::restaurants::{
-    create_restaurant, delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant,
-};
+use routes::restaurants::get_restaurants;
 use tracing_subscriber::field::MakeExt;
 use tracing_subscriber::fmt::format;
 
@@ -49,8 +47,8 @@ async fn main() {
         .delimited(" - "))
         .init();
 
-    let store = Store::init();
-    let store_filter = warp::any().map(move || store.clone());
+    let store = Store::new("postgres://postgres:4431@localhost:5432/restaurantapi").await;
+    let store_filter = warp::any().map( move || store.clone());
 
     let cors = warp::cors()
         .allow_any_origin()
@@ -74,41 +72,42 @@ async fn main() {
             )
         }));
 
-    let create_restaurant = warp::post()
-        .and(warp::path("restaurants"))
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and(warp::body::json())
-        .and_then(create_restaurant);
+    // let create_restaurant = warp::post()
+    //     .and(warp::path("restaurants"))
+    //     .and(warp::path::end())
+    //     .and(store_filter.clone())
+    //     .and(warp::body::json())
+    //     .and_then(create_restaurant);
 
-    let get_single_restaurant = warp::get()
-        .and(warp::path("restaurants"))
-        .and(warp::path::param::<i32>())
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and_then(get_single_restaurant);
+    // let get_single_restaurant = warp::get()
+    //     .and(warp::path("restaurants"))
+    //     .and(warp::path::param::<i32>())
+    //     .and(warp::path::end())
+    //     .and(store_filter.clone())
+    //     .and_then(get_single_restaurant);
 
-    let update_restaurant = warp::put()
-        .and(warp::path("restaurants"))
-        .and(warp::path::param::<i32>())
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and(warp::body::json())
-        .and_then(update_restaurant);
+    // let update_restaurant = warp::put()
+    //     .and(warp::path("restaurants"))
+    //     .and(warp::path::param::<i32>())
+    //     .and(warp::path::end())
+    //     .and(store_filter.clone())
+    //     .and(warp::body::json())
+    //     .and_then(update_restaurant);
 
-    let delete_restaurant = warp::delete()
-        .and(warp::path("restaurants"))
-        .and(warp::path::param::<i32>())
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and_then(delete_restaurant);
+    // let delete_restaurant = warp::delete()
+        // .and(warp::path("restaurants"))
+        // .and(warp::path::param::<i32>())
+        // .and(warp::path::end())
+        // .and(store_filter.clone())
+        // .and_then(delete_restaurant);
 
-    let routes = create_restaurant
-        .or(home)
+    // let routes = create_restaurant
+    let routes = 
+        home
         .or(get_restaurants)
-        .or(get_single_restaurant)
-        .or(update_restaurant)
-        .or(delete_restaurant)
+        // .or(get_single_restaurant)
+        // .or(update_restaurant)
+        // .or(delete_restaurant)
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);
@@ -117,7 +116,7 @@ async fn main() {
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// p: 209
+// p: 214
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅)

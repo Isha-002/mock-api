@@ -2,6 +2,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+
 use super::food::Food;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
