@@ -7,51 +7,36 @@ use crate::{
     store::Store,
     types::{
         pagination::{self, extract_pagination, Pagination},
-        restaurant::{Restaurant, RestaurantId},
+        restaurant::{self, NewRestaurant, Restaurant, RestaurantId},
     },
 };
 
-// #[instrument]
-// pub async fn create_restaurant(
-//     store: Store,
-//     restaurant: Restaurant,
-// ) -> Result<impl warp::Reply, warp::Rejection> {
-//     store
-//         .restaurants
-//         .write()
-//         .await
-//         .insert(restaurant.id.clone(), restaurant);
-//     info!("restaurant added");
-//     Ok(warp::reply::with_status(
-//         "restaurant added!",
-//         warp::http::StatusCode::OK,
-//     ))
-// }
-// #[instrument]
-// pub async fn get_single_restaurant(
-//     id: i32,
-//     store: Store,
-// ) -> Result<impl warp::Reply, warp::Rejection> {
-//     let restaurant = store.restaurants.read().await;
-//     match restaurant.get(&RestaurantId(id)) {
-//         Some(res) => {
-//             info!("querying one restaurant");
-//             Ok(warp::reply::json(res))
-//         }
-//         None => {
-//             if id.is_negative() {
-//                 error!("restaurant id invalid");
-//                 Err(warp::reject::custom(InvalidID))
-//             } else if !restaurant.contains_key(&RestaurantId(id)) {
-//                 error!("restaurant id not found");
-//                 Err(warp::reject::custom(Error::restaurant_not_found))
-//             } else {
-//                 error!("restaurant not found unknown error");
-//                 Err(warp::reject::custom(Error::unkown_error))
-//             }
-//         }
-//     }
-// }
+#[instrument]
+pub async fn create_restaurant(
+    store: Store,
+    restaurant: NewRestaurant,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    if let Err(e) = store.add_restaurant(restaurant).await {
+        return Err(warp::reject::custom(e));
+    }
+    info!("restaurant added");
+    Ok(warp::reply::with_status(
+        "restaurant added!",
+        warp::http::StatusCode::OK,
+    ))
+}
+#[instrument]
+pub async fn get_single_restaurant(
+    id: i32,
+    store: Store,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let res = match store.get_single_restaurant(id).await {
+        Ok(restaurant) => restaurant,
+        Err(e) => return Err(warp::reject::custom(e)),
+    };
+    Ok(warp::reply::json(&res))
+}
+
 #[instrument]
 pub async fn get_restaurants(
     params: HashMap<String, String>,
@@ -68,7 +53,7 @@ pub async fn get_restaurants(
             .await
         {
             Ok(res) => res,
-            Err(e) => {return  Err(warp::reject::custom(Error::database_query_error(e)))},
+            Err(e) => return Err(warp::reject::custom(e)),
         };
         Ok(warp::reply::json(&res))
     } else {
@@ -78,48 +63,32 @@ pub async fn get_restaurants(
             .await
         {
             Ok(res) => res,
-            Err(e) => {return  Err(warp::reject::custom(Error::database_query_error(e)))},
+            Err(e) => return Err(warp::reject::custom(e)),
         };
         Ok(warp::reply::json(&res))
     }
 }
-// #[instrument]
-// pub async fn update_restaurant(
-//     id: i32,
-//     store: Store,
-//     restaurant: Restaurant,
-// ) -> Result<impl warp::Reply, warp::Rejection> {
-//     let _ = match store.restaurants.write().await.get_mut(&RestaurantId(id)) {
-//         Some(r) => {
-//             *r = restaurant;
-//             Ok::<(), Error>(())
-//         }
-//         None => {
-//             return {
-//                 error!("restaurant not found");
-//                 Err(warp::reject::custom(Error::restaurant_not_found))
-//             }
-//         }
-//     };
-//     info!("restaurant updated");
-//     Ok(warp::reply::with_status(
-//         "restaurant modified",
-//         warp::http::StatusCode::OK,
-//     ))
-// }
-// #[instrument]
-// pub async fn delete_restaurant(id: i32, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
-//     match store.restaurants.write().await.remove(&RestaurantId(id)) {
-//         Some(_) => {
-//             info!("restaurant deleted");
-//             Ok(warp::reply::with_status(
-//                 "restaurant deleted",
-//                 warp::http::StatusCode::OK,
-//             ))
-//         }
-//         None => {
-//             error!("restaurant not found");
-//             Err(warp::reject::custom(Error::restaurant_not_found))
-//         }
-//     }
-// }
+
+#[instrument]
+pub async fn update_restaurant(
+    id: i32,
+    store: Store,
+    restaurant: Restaurant,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let res = match store.update_restaurant(restaurant, id).await {
+        Ok(restaurant) => restaurant,
+        Err(e) => return Err(warp::reject::custom(e)),
+    };
+    info!("restaurant updated");
+    Ok(warp::reply::json(&res))
+}
+#[instrument]
+pub async fn delete_restaurant(id: i32, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    if let Err(e) = store.delete_restaurant(id).await {
+        return Err(warp::reject::custom(e));
+    }
+    Ok(warp::reply::with_status(
+        format!("Restaurant {} deleted", id),
+        warp::http::StatusCode::OK,
+    ))
+}

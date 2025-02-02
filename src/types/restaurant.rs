@@ -34,3 +34,14 @@ impl fmt::Display for RestaurantId {
         write!(f, "{}", self.0)
     }
 }
+
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct NewRestaurant {
+    pub name: String,
+    pub rating: f32,
+    pub distance: f64,
+    pub tags: Option<Vec<String>>,
+    pub menu: Vec<Food>,
+    pub image: String,
+}
