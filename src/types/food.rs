@@ -6,7 +6,7 @@ use sqlx::Type;
 pub struct Food {
     pub name: String,
     pub price: i32,
-    pub ingredient: Vec<String>,
+    pub ingredient: Option<Vec<String>>,
     pub available: bool,
 }
 

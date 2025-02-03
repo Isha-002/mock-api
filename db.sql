@@ -1,18 +1,22 @@
+-- 
+-- DROP TYPE IF EXISTS food CASCADE;
+-- 
 CREATE TYPE food AS (
-  name VARCHAR(100),
+  name TEXT,
   price INT,
   ingredient TEXT[],
   available BOOLEAN
 );
-
-
+-- to modify types otherwise remove this line
+-- DROP TABLE IF EXISTS restaurant CASCADE; 
+-- 
 CREATE TABLE IF NOT EXISTS restaurant (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
+  name TEXT NOT NULL,
   rating REAL NOT NULL,
   distance DOUBLE PRECISION NOT NULL,
   tags TEXT[],
   menu food[] NOT NULL,
-  image VARCHAR(255) NOT NULL,
+  image TEXT NOT NULL,
   created_on TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -66,7 +66,7 @@ impl Store {
     ) -> Result<Restaurant, error::Error> {
         match sqlx::query(
             "INSERT INTO restaurant (name, rating, distance, tags, menu, image)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5::food[], $6)
         RETURNING id, name, rating, distance, tags, menu, image
         ",
         )
@@ -161,3 +161,8 @@ impl Store {
         }
     }
 }
+
+
+
+
+
