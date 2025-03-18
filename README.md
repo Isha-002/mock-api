@@ -44,10 +44,10 @@ Response of the Get request (200 OK):
         "name": "Margherita",
         "price": 12.99,
         "ingredients": ["Tomato", "Mozzarella", "Basil"],
-        "is_available": true
+        "available": true
       }
     ],
-    "image_url": "http://example.com/pizza-palace.jpg"
+    "image": "http://example.com/pizza-palace.jpg"
   }
 ]
 ```
@@ -103,10 +103,10 @@ Request Body:
       "name": "California Roll",
       "price": 8.99,
       "ingredients": ["Rice", "Crab", "Avocado"],
-      "is_available": true
+      "available": true
     }
   ],
-  "image_url": "http://example.com/restaurant.jpg"
+  "image": "http://example.com/restaurant.jpg"
 }
 ```
 
@@ -144,7 +144,7 @@ const newRestaurant = {
   distance: 3.2,
   tags: ["Burgers", "American"],
   menu: [],
-  image_url: "http://example.com/new-restaurant.jpg"
+  image: "http://example.com/new-restaurant.jpg"
 };
 
 createRestaurant(newRestaurant);
@@ -172,10 +172,10 @@ Response (200 OK):
       "name": "Margherita",
       "price": 12.99,
       "ingredients": ["Tomato", "Mozzarella", "Basil"],
-      "is_available": true
+      "available": true
     }
   ],
-  "image_url": "http://example.com/pizza-palace.jpg"
+  "image": "http://example.com/pizza-palace.jpg"
 }
 ```
 
@@ -194,10 +194,10 @@ Request Body:
       "name": "Super Margherita",
       "price": 14.99,
       "ingredients": ["Tomato", "Buffalo Mozzarella", "Fresh Basil"],
-      "is_available": true
+      "available": true
     }
   ],
-  "image_url": "http://example.com/updated-pizza-palace.jpg"
+  "image": "http://example.com/updated-pizza-palace.jpg"
 }
 ```
 Response (200 OK):
@@ -233,7 +233,7 @@ const updatedRestaurantData = {
   distance: 1.5,
   cuisines: ["Italian", "Pizza", "Pasta"],
   menu: [],
-  image_url: "http://example.com/updated-restaurant.jpg"
+  image: "http://example.com/updated-restaurant.jpg"
 };
 
 updateRestaurant(restaurantId, updatedRestaurantData);
