@@ -19,7 +19,7 @@ pub enum Error {
     unacceptable_parameters,
     restaurant_not_found,
     unkown_error,
-    database_query_error(SqlxError)
+    database_query_error(SqlxError),
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

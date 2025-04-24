@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Type)]
-#[sqlx(type_name = "food")] 
+#[sqlx(type_name = "foodType")] 
 pub struct Food {
     pub name: String,
     pub price: i32,

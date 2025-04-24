@@ -3,7 +3,7 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 
 
-use super::food::Food;
+use super::{comment::Comment, food::Food};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Restaurant {
@@ -14,6 +14,8 @@ pub struct Restaurant {
     pub tags: Option<Vec<String>>,
     pub menu: Vec<Food>,
     pub image: String,
+    pub city: String,
+    pub address: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, Hash, PartialEq)]
@@ -44,4 +46,6 @@ pub struct NewRestaurant {
     pub tags: Option<Vec<String>>,
     pub menu: Vec<Food>,
     pub image: String,
+    pub city: String,
+    pub address: String,
 }

@@ -1,3 +1,4 @@
+use routes::comments::{add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment, get_comments, put_comments};
 use routes::{home::home, restaurants::create_restaurant};
 use routes::restaurants::{delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant};
 use tracing_subscriber::field::MakeExt;
@@ -101,12 +102,72 @@ async fn main() {
         .and(store_filter.clone())
         .and_then(delete_restaurant);
 
+    let get_comments = warp::get()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path("comments"))
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(get_comments);
+
+    let put_comments = warp::put()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path("comments"))
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and(warp::body::json())
+        .and_then(put_comments);
+
+    let add_comments_like = warp::put()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path("comments"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(add_like_comment);
+
+    let add_comments_dislike = warp::put()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path("comments"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(add_dislike_comment);
+
+    let delete_comments_like = warp::put()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path("comments"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(delete_like_comment);
+
+    let delete_comments_dislike = warp::put()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path("comments"))
+        .and(warp::path::param::<i32>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(delete_dislike_comment);
+
         let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
         .or(get_single_restaurant)
         .or(update_restaurant)
         .or(delete_restaurant)
+        .or(get_comments)
+        .or(put_comments)
+        .or(add_comments_like)
+        .or(add_comments_dislike)
+        .or(delete_comments_like)
+        .or(delete_comments_dislike)
+
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);
