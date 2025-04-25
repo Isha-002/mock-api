@@ -2,15 +2,14 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-
-use super::{comment::Comment, food::Food};
+use super::food::Food;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Restaurant {
     pub id: RestaurantId,
     pub name: String,
     pub rating: f32,
-    pub distance: f64,
+    pub distance: f64, // my frontend guy is too lazy, so...
     pub tags: Option<Vec<String>>,
     pub menu: Vec<Food>,
     pub image: String,
@@ -36,7 +35,6 @@ impl fmt::Display for RestaurantId {
         write!(f, "{}", self.0)
     }
 }
-
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct NewRestaurant {

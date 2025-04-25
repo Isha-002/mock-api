@@ -1,8 +1,9 @@
 use crate::{
     error::{self, Error},
     types::{
-        comment::{Comment, NewComment}, food::Food, restaurant::{self, NewRestaurant, Restaurant, RestaurantId}
-    },
+        comment::{Comment, NewComment},
+        restaurant::{NewRestaurant, Restaurant, RestaurantId},
+    }, utils::{fake_data::fake_data_sql, migration::migration_sql},
 };
 use sqlx::Row;
 use sqlx::{
@@ -27,6 +28,28 @@ impl Store {
         };
         Store {
             connection: db_pool,
+        }
+    }
+
+    pub async fn migrate(&self) {
+        let sql = migration_sql();
+        match sqlx::raw_sql(&sql).execute(&self.connection).await {
+            Ok(_) => {},
+            Err(e) => {
+                tracing::error!("Error migrating: {:?}", e);
+                panic!("Error migrating: {}", Error::database_query_error(e));
+            }
+        }
+    }
+
+    pub async fn insert_fake_data(&self) {
+        let sql = fake_data_sql();
+        match sqlx::raw_sql(&sql).execute(&self.connection).await {
+            Ok(_) => {},
+            Err(e) => {
+                tracing::error!("Error inserting fake data: {:?}", e);
+                panic!("Error inserting fake data: {}", Error::database_query_error(e));
+            }
         }
     }
 
@@ -88,7 +111,7 @@ impl Store {
             menu: row.get("menu"),
             image: row.get("image"),
             address: row.get("address"),
-            city: row.get("city")
+            city: row.get("city"),
         })
         .fetch_one(&self.connection)
         .await
@@ -148,10 +171,13 @@ impl Store {
             Err(e) => Err(Error::database_query_error(e)),
         }
     }
-    pub async fn get_single_restaurant(&self, restaurant_id: i32) -> Result<Restaurant, error::Error> {
+    pub async fn get_single_restaurant(
+        &self,
+        restaurant_id: i32,
+    ) -> Result<Restaurant, error::Error> {
         match sqlx::query(
             "SELECT * FROM restaurant
-            WHERE id = $1"
+            WHERE id = $1",
         )
         .bind(restaurant_id)
         .map(|row: PgRow| Restaurant {
@@ -166,7 +192,7 @@ impl Store {
             city: row.get("city"),
         })
         .fetch_one(&self.connection)
-        .await 
+        .await
         {
             Ok(restaurant) => Ok(restaurant),
             Err(e) => Err(Error::database_query_error(e)),
@@ -176,40 +202,45 @@ impl Store {
     pub async fn get_comments(&self, restaurant_id: i32) -> Result<Vec<Comment>, error::Error> {
         match sqlx::query(
             "SELECT * FROM comments WHERE restaurant_id = $1 
-            ORDER BY likes DESC"
-        ).bind(restaurant_id)
+            ORDER BY likes DESC",
+        )
+        .bind(restaurant_id)
         .map(|row: PgRow| Comment {
             id: row.get("id"),
             restaurant_id,
             name: row.get("name"),
             text: row.get("text"),
             likes: row.get("likes"),
-            dislikes: row.get("dislikes")
+            dislikes: row.get("dislikes"),
         })
         .fetch_all(&self.connection)
         .await
-    {
-        Ok(comments) => Ok(comments),
-        Err(e) => Err(error::Error::database_query_error(e)),
+        {
+            Ok(comments) => Ok(comments),
+            Err(e) => Err(error::Error::database_query_error(e)),
+        }
     }
-    }
-    pub async fn add_comment(&self, restaurant_id: i32, comment: NewComment) -> Result<Comment, error::Error> {
+    pub async fn add_comment(
+        &self,
+        restaurant_id: i32,
+        comment: NewComment,
+    ) -> Result<Comment, error::Error> {
         match sqlx::query(
             "INSERT INTO comments (restaurant_id name text) VALUES ($1, $2, $3) 
             WHERE id = $4
-            RETURNING *"
+            RETURNING *",
         )
-        .bind(restaurant_id) 
-        .bind(comment.name) 
-        .bind(comment.text) 
-        .bind(restaurant_id) 
+        .bind(restaurant_id)
+        .bind(comment.name)
+        .bind(comment.text)
+        .bind(restaurant_id)
         .map(|row: PgRow| Comment {
             id: row.get("id"),
             restaurant_id,
             name: row.get("name"),
             text: row.get("text"),
             likes: row.get("likes"),
-            dislikes: row.get("dislikes")
+            dislikes: row.get("dislikes"),
         })
         .fetch_one(&self.connection)
         .await
@@ -218,22 +249,31 @@ impl Store {
             Err(e) => Err(error::Error::database_query_error(e)),
         }
     }
-    pub async fn delete_comment(&self, restaurant_id: i32, comment_id: i32) -> Result<bool, error::Error> {
+    // dont forget this guy
+    pub async fn _delete_comment(
+        &self,
+        restaurant_id: i32,
+        comment_id: i32,
+    ) -> Result<bool, error::Error> {
         match sqlx::query("DELETE FROM comments WHERE restaurant_id = $1 AND id = $2")
-        .bind(restaurant_id)
-        .bind(comment_id)
-        .execute(&self.connection)
-        .await
-    {
-        Ok(_) => Ok(true),
-        Err(e) => Err(Error::database_query_error(e)),
-    }
+            .bind(restaurant_id)
+            .bind(comment_id)
+            .execute(&self.connection)
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) => Err(Error::database_query_error(e)),
+        }
     }
 
-    pub async fn add_comment_like(&self, restaurant_id: i32, comment_id: i32) -> Result<Comment, error::Error> {
+    pub async fn add_comment_like(
+        &self,
+        restaurant_id: i32,
+        comment_id: i32,
+    ) -> Result<Comment, error::Error> {
         match sqlx::query(
             "UPDATE comments SET likes = likes + 1 WHERE restaurant_id = $1 AND id = $2
-            RETURNING *"
+            RETURNING *",
         )
         .bind(restaurant_id)
         .bind(comment_id)
@@ -243,7 +283,7 @@ impl Store {
             name: row.get("name"),
             text: row.get("text"),
             likes: row.get("likes"),
-            dislikes: row.get("dislikes")
+            dislikes: row.get("dislikes"),
         })
         .fetch_one(&self.connection)
         .await
@@ -253,7 +293,11 @@ impl Store {
         }
     }
 
-    pub async fn remove_comment_like(&self, restaurant_id: i32, comment_id: i32) -> Result<Comment, error::Error> {
+    pub async fn remove_comment_like(
+        &self,
+        restaurant_id: i32,
+        comment_id: i32,
+    ) -> Result<Comment, error::Error> {
         match sqlx::query(
             "UPDATE comments SET likes = GREATEST(likes - 1, 0) WHERE restaurant_id = $1 AND id = $2 AND likes > 0
             RETURNING *"
@@ -276,10 +320,14 @@ impl Store {
         }
     }
 
-    pub async fn add_comment_dislike(&self, restaurant_id: i32, comment_id: i32) -> Result<Comment, error::Error> {
+    pub async fn add_comment_dislike(
+        &self,
+        restaurant_id: i32,
+        comment_id: i32,
+    ) -> Result<Comment, error::Error> {
         match sqlx::query(
             "UPDATE comments SET dislikes = dislikes + 1 WHERE restaurant_id = $1 AND id = $2
-            RETURNING *"
+            RETURNING *",
         )
         .bind(restaurant_id)
         .bind(comment_id)
@@ -289,7 +337,7 @@ impl Store {
             name: row.get("name"),
             text: row.get("text"),
             likes: row.get("likes"),
-            dislikes: row.get("dislikes")
+            dislikes: row.get("dislikes"),
         })
         .fetch_one(&self.connection)
         .await
@@ -299,7 +347,11 @@ impl Store {
         }
     }
 
-    pub async fn remove_comment_dislike(&self, restaurant_id: i32, comment_id: i32) -> Result<Comment, error::Error> {
+    pub async fn remove_comment_dislike(
+        &self,
+        restaurant_id: i32,
+        comment_id: i32,
+    ) -> Result<Comment, error::Error> {
         match sqlx::query(
             "UPDATE comments SET dislikes = GREATEST(dislikes - 1, 0) WHERE restaurant_id = $1 AND id = $2 AND dislikes > 0
             RETURNING *"
@@ -321,9 +373,57 @@ impl Store {
             Err(e) => Err(error::Error::database_query_error(e)),
         }
     }
+        // search
+    pub async fn search_by_city(&self, city: String) -> Result<Vec<Restaurant>, error::Error>  {
+        match sqlx::query(
+            "SELECT * from restaurant
+            WHERE city = $1
+            ORDER BY rating DESC"
+        )
+        .bind(city)
+        .map(|row: PgRow| Restaurant {
+            id: RestaurantId(row.get("id")),
+            name: row.get("name"),
+            rating: row.get("rating"),
+            distance: row.get("distance"),
+            tags: row.get("tags"),
+            menu: row.get("menu"),
+            image: row.get("image"),
+            address: row.get("address"),
+            city: row.get("city"),
+        })
+        .fetch_all(&self.connection)
+        .await
+        {
+            Ok(restaurant) => Ok(restaurant),
+            Err(e) => Err(Error::database_query_error(e)),
+        }
+    }
+    pub async fn search_by_tag(&self, tag: String) -> Result<Vec<Restaurant>, error::Error> {
+        match sqlx::query(
+            "SELECT * from restaurant
+            WHERE $1 = ANY(tags)
+            ORDER BY rating DESC"
+        )
+        .bind(tag)
+        .map(|row: PgRow| Restaurant {
+            id: RestaurantId(row.get("id")),
+            name: row.get("name"),
+            rating: row.get("rating"),
+            distance: row.get("distance"),
+            tags: row.get("tags"),
+            menu: row.get("menu"),
+            image: row.get("image"),
+            address: row.get("address"),
+            city: row.get("city"),
+        })
+        .fetch_all(&self.connection)
+        .await
+        {
+            Ok(restaurant) => Ok(restaurant),
+            Err(e) => Err(Error::database_query_error(e)),
+        }
+    }
+
+
 }
-
-
-
-
-

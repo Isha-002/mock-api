@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use tracing::{error, event, info, instrument, Level};
+use tracing::{event, info, instrument, Level};
 
 use crate::{
-    error::{Error, InvalidID},
     store::Store,
     types::{
-        pagination::{self, extract_pagination, Pagination},
-        restaurant::{self, NewRestaurant, Restaurant, RestaurantId},
+        pagination::{extract_pagination, Pagination},
+        restaurant::{ NewRestaurant, Restaurant},
     },
 };
 
@@ -91,4 +90,24 @@ pub async fn delete_restaurant(id: i32, store: Store) -> Result<impl warp::Reply
         format!("Restaurant {} deleted", id),
         warp::http::StatusCode::OK,
     ))
+}
+
+#[instrument]
+pub async fn search_by_city(city: String, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    let res = match store.search_by_city(city).await {
+        Ok(restaurants) => restaurants,
+        Err(e) => return Err(warp::reject::custom(e)),
+    };
+
+    Ok(warp::reply::json(&res))
+}
+
+#[instrument]
+pub async fn search_by_tag(tag: String, store: Store) -> Result<impl warp::Reply, warp::Rejection> {
+    let res = match store.search_by_tag(tag).await {
+        Ok(restaurants) => restaurants,
+        Err(e) => return Err(warp::reject::custom(e)),
+    };
+
+    Ok(warp::reply::json(&res))
 }

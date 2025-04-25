@@ -15,11 +15,13 @@ pub struct Pagination {
 pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, Error> {
     if params.contains_key("limit") && params.contains_key("offset") {
         Ok(Pagination {
-            limit: Some(params
-                .get("limit")
-                .unwrap()
-                .parse::<i32>()
-                .map_err(Error::parse_error)?),
+            limit: Some(
+                params
+                    .get("limit")
+                    .unwrap()
+                    .parse::<i32>()
+                    .map_err(Error::parse_error)?,
+            ),
             offset: params
                 .get("offset")
                 .unwrap()

@@ -1,12 +1,20 @@
-use routes::comments::{add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment, get_comments, put_comments};
+use routes::comments::{
+    add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment,
+    get_comments, put_comments,
+};
+use routes::restaurants::{
+    delete_restaurant, get_restaurants, get_single_restaurant, search_by_city, search_by_tag, update_restaurant
+};
 use routes::{home::home, restaurants::create_restaurant};
-use routes::restaurants::{delete_restaurant, get_restaurants, get_single_restaurant, update_restaurant};
 use tracing_subscriber::field::MakeExt;
 use tracing_subscriber::fmt::format;
+use utils::arguments::arguments;
 
-use types::timer::CustomTimer;
-use std::fs::{create_dir_all, OpenOptions};
+use std::fs::{create_dir_all, File, OpenOptions};
+use std::panic;
 use store::Store;
+use types::timer::CustomTimer;
+use std::io::Write;
 
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{http::Method, Filter};
@@ -14,21 +22,27 @@ mod error;
 mod routes;
 mod store;
 mod types;
+mod utils;
 use error::return_error;
-
-
-
 
 #[tokio::main]
 async fn main() {
+
+    panic::set_hook(Box::new(|info| {
+        let mut file = File::create("restaurant_api_error_log.txt").unwrap();
+        let _ = writeln!(file, "Panic occurred: {}", info);
+    }));
+
+    let arguments = arguments();
+
     let timer = CustomTimer;
 
     create_dir_all("log").expect("failed to create log directory");
     let file = OpenOptions::new()
-    .create(true) 
-    .append(true)  
-    .open("log/info.log")
-    .expect("couldn't open or create the log file");
+        .create(true)
+        .append(true)
+        .open("log/info.log")
+        .expect("couldn't open or create the log file");
     let (none_blocking, _worker_guard) = tracing_appender::non_blocking(file);
 
     let log_filter =
@@ -41,15 +55,24 @@ async fn main() {
         .with_span_events(FmtSpan::CLOSE)
         .with_target(false)
         .with_thread_ids(false)
-        .with_thread_names(false).compact().fmt_fields(format::debug_fn(|writer, field, value| {
-            write!(writer, "[{}: {:?}]", field, value)
-        })
-
-        .delimited(" - "))
+        .with_thread_names(false)
+        .compact()
+        .fmt_fields(
+            format::debug_fn(|writer, field, value| write!(writer, "[{}: {:?}]", field, value))
+                .delimited(" - "),
+        )
         .init();
 
     let store = Store::new("postgres://postgres:4431@localhost:5432/restaurantapi").await;
-    let store_filter = warp::any().map( move || store.clone());
+    let store_for_filters = store.clone();
+    let store_filter = warp::any().map(move || store_for_filters.clone());
+
+    if arguments.get_flag("reset") {
+        let _ = &store.migrate().await;
+    }
+    if arguments.get_flag("data") {
+        let _ = &store.insert_fake_data().await;
+    }
 
     let cors = warp::cors()
         .allow_any_origin()
@@ -124,6 +147,8 @@ async fn main() {
         .and(warp::path::param::<i32>())
         .and(warp::path("comments"))
         .and(warp::path::param::<i32>())
+        .and(warp::path("likes"))
+        .and(warp::path("add"))
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(add_like_comment);
@@ -133,6 +158,8 @@ async fn main() {
         .and(warp::path::param::<i32>())
         .and(warp::path("comments"))
         .and(warp::path::param::<i32>())
+        .and(warp::path("dislikes"))
+        .and(warp::path("add"))
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(add_dislike_comment);
@@ -142,6 +169,8 @@ async fn main() {
         .and(warp::path::param::<i32>())
         .and(warp::path("comments"))
         .and(warp::path::param::<i32>())
+        .and(warp::path("likes"))
+        .and(warp::path("remove"))
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(delete_like_comment);
@@ -151,11 +180,28 @@ async fn main() {
         .and(warp::path::param::<i32>())
         .and(warp::path("comments"))
         .and(warp::path::param::<i32>())
+        .and(warp::path("dislike"))
+        .and(warp::path("remove"))
         .and(warp::path::end())
         .and(store_filter.clone())
         .and_then(delete_dislike_comment);
 
-        let routes = create_restaurant
+    // search
+    let search_by_city = warp::get()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<String>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(search_by_city);
+
+    let search_by_tag = warp::get()
+        .and(warp::path("restaurants"))
+        .and(warp::path::param::<String>())
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and_then(search_by_tag);
+
+    let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
         .or(get_single_restaurant)
@@ -167,7 +213,8 @@ async fn main() {
         .or(add_comments_dislike)
         .or(delete_comments_like)
         .or(delete_comments_dislike)
-
+        .or(search_by_city)
+        .or(search_by_tag)
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);
