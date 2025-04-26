@@ -1,5 +1,5 @@
 [package]
-name = "mock-api"
+name = "restaurant-api"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,5 +16,5 @@ tracing-appender = "0.2"
 chrono = { version = "0.4.39"}
 sqlx = { version = "0.8.0", features = [ "runtime-tokio-rustls", "migrate", "postgres" ] } 
 clap ={ version = "4", features = ["cargo"]}
-
+urlencoding = "2.1.3"
 

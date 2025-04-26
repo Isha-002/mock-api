@@ -10,6 +10,7 @@ use sqlx::{
     postgres::{PgPoolOptions, PgRow},
     PgPool,
 };
+use urlencoding::{decode, decode_binary};
 
 #[derive(Clone, Debug)]
 pub struct Store {
@@ -375,12 +376,13 @@ impl Store {
     }
         // search
     pub async fn search_by_city(&self, city: String) -> Result<Vec<Restaurant>, error::Error>  {
+        let decoded_city = decode(&city).unwrap().into_owned();
         match sqlx::query(
             "SELECT * from restaurant
             WHERE city = $1
             ORDER BY rating DESC"
         )
-        .bind(city)
+        .bind(decoded_city)
         .map(|row: PgRow| Restaurant {
             id: RestaurantId(row.get("id")),
             name: row.get("name"),
@@ -399,13 +401,16 @@ impl Store {
             Err(e) => Err(Error::database_query_error(e)),
         }
     }
+
     pub async fn search_by_tag(&self, tag: String) -> Result<Vec<Restaurant>, error::Error> {
+        let decoded_tag = decode(&tag).unwrap().into_owned();
+        // println!("tag: {decoded_tag:?}");
         match sqlx::query(
             "SELECT * from restaurant
             WHERE $1 = ANY(tags)
             ORDER BY rating DESC"
         )
-        .bind(tag)
+        .bind(decoded_tag)
         .map(|row: PgRow| Restaurant {
             id: RestaurantId(row.get("id")),
             name: row.get("name"),

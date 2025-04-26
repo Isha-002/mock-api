@@ -189,6 +189,7 @@ async fn main() {
     // search
     let search_by_city = warp::get()
         .and(warp::path("restaurants"))
+        .and(warp::path("city"))
         .and(warp::path::param::<String>())
         .and(warp::path::end())
         .and(store_filter.clone())
@@ -196,6 +197,7 @@ async fn main() {
 
     let search_by_tag = warp::get()
         .and(warp::path("restaurants"))
+        .and(warp::path("tag"))
         .and(warp::path::param::<String>())
         .and(warp::path::end())
         .and(store_filter.clone())
