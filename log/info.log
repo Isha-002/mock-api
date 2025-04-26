@@ -567,3 +567,7 @@
 27/04/2025 00:41:08  INFO request: [message: finished processing with success] - [status: 200] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:8577] [referer: http://localhost:4444/]
 27/04/2025 00:41:08  INFO request: [message: finished processing with success] - [status: 200] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:8577] [referer: http://localhost:4444/]
 27/04/2025 00:41:08  INFO request: [message: "close"] - [time.busy: 2.70ms] - [time.idle: 3.07ms] [method: GET] - [path: /restaurants] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:8577] [referer: http://localhost:4444/]
+27/04/2025 00:44:08  INFO Server::run: [message: listening on http://0.0.0.0:4444] [addr: 0.0.0.0:4444]
+27/04/2025 00:44:14  INFO request: [message: processing request] [method: GET] - [path: /] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:8650]
+27/04/2025 00:44:14  INFO request: [message: finished processing with success] - [status: 200] [method: GET] - [path: /] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:8650]
+27/04/2025 00:44:14  INFO request: [message: "close"] - [time.busy: 358µs] - [time.idle: 67.6µs] [method: GET] - [path: /] - [version: HTTP/1.1] [remote.addr: 127.0.0.1:8650]
