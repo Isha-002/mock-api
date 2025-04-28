@@ -1573,6 +1573,7 @@ dependencies = [
  "benches",
  "chrono",
  "clap",
+ "futures",
  "serde",
  "serde_json",
  "sqlx",

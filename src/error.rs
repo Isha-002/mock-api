@@ -20,6 +20,10 @@ pub enum Error {
     // restaurant_not_found,
     // unkown_error,
     database_query_error(SqlxError),
+    creating_upload_dir(std::io::Error),
+    write_file(std::io::Error),
+    no_file,
+    bail_out_card
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -41,6 +45,18 @@ impl std::fmt::Display for Error {
             // }
             Error::database_query_error(e) => {
                 write!(f, "could not execute query: {}", e)
+            }
+            Error::creating_upload_dir(e) => {
+                write!(f, "failed to create upload folder: {}", e)
+            }
+            Error::write_file(e) => {
+                write!(f, "failed to write the file: {}", e)
+            }
+            Error::no_file => {
+                write!(f, "found no file")
+            }
+            Error::bail_out_card => {
+                write!(f, "well, we found an error but dont know why!\n this happens because i had a hard time handling errors and i wanted to bail out")
             }
         }
     }

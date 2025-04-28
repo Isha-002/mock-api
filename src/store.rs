@@ -5,6 +5,7 @@ use crate::{
         restaurant::{NewRestaurant, Restaurant, RestaurantId},
     }, utils::{fake_data::fake_data_sql, migration::migration_sql},
 };
+use futures::FutureExt;
 use sqlx::Row;
 use sqlx::{
     postgres::{PgPoolOptions, PgRow},
@@ -374,7 +375,8 @@ impl Store {
             Err(e) => Err(error::Error::database_query_error(e)),
         }
     }
-        // search
+    /////////////////////////////////////////////////////////////////////////////////////
+    // search
     pub async fn search_by_city(&self, city: String) -> Result<Vec<Restaurant>, error::Error>  {
         let decoded_city = decode(&city).unwrap().into_owned();
         match sqlx::query(
@@ -404,7 +406,6 @@ impl Store {
 
     pub async fn search_by_tag(&self, tag: String) -> Result<Vec<Restaurant>, error::Error> {
         let decoded_tag = decode(&tag).unwrap().into_owned();
-        // println!("tag: {decoded_tag:?}");
         match sqlx::query(
             "SELECT * from restaurant
             WHERE $1 = ANY(tags)
@@ -429,6 +430,40 @@ impl Store {
             Err(e) => Err(Error::database_query_error(e)),
         }
     }
+    /////////////////////////////////////////////////////////////////////////////////////
+    // handle files 
+    pub async fn insert_file_to_restaurant(&self, url: &str, restaurant_id: i32) -> Result<bool, Error> {
+        match sqlx::query(
+            "UPDATE restaurant 
+            SET image = $1
+            WHERE id = $2"
+        )
+        .bind(url)
+        .bind(restaurant_id)
+        .execute(&self.connection)
+        .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) => Err(Error::database_query_error(e)),
+        }
+    }
 
+    pub async fn get_restaurant_image(&self, restaurant_id: i32) -> Result<String, Error> {
+        match sqlx::query(
+            "SELECT image from restaurant
+            WHERE id = $1"
+        )
+        .bind(restaurant_id)
+        .map(|row: PgRow| {
+            row.get("image")
+        })
+        .fetch_one(&self.connection)
+        .await
+        {
+            Ok(url) => Ok(url),
+            Err(e) => Err(Error::database_query_error(e)),
+        }
+    }
+    /////////////////////////////////////////////////////////////////////////////////////
 
 }
