@@ -2,7 +2,7 @@ use routes::comments::{
     add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment,
     get_comments, put_comments,
 };
-use routes::files::upload_file_handler;
+use routes::files::restaurant_pfp_handler;
 use routes::restaurants::{
     delete_restaurant, get_restaurants, get_single_restaurant, search_by_city, search_by_tag, update_restaurant
 };
@@ -208,13 +208,13 @@ async fn main() {
     let files_route = warp::path("upload")
     .and(warp::fs::dir("./uploads"));
 
-    let upload_route = warp::path("restaurants")
+    let restaurant_pfp_upload_route = warp::path("restaurants")
         .and(warp::path::param::<i32>())
         .and(warp::path("upload"))
         .and(warp::post())
         .and(warp::multipart::form())
         .and(store_filter.clone())
-        .and_then(upload_file_handler);
+        .and_then(restaurant_pfp_handler);
 
     // let get_file_route = warp::path("files")
     //     .and(warp::path::param::<i32>())
@@ -239,7 +239,7 @@ async fn main() {
         .or(search_by_city)
         .or(search_by_tag)
         .or(files_route)
-        .or(upload_route)
+        .or(restaurant_pfp_upload_route)
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);

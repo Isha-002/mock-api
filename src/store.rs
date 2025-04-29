@@ -5,13 +5,12 @@ use crate::{
         restaurant::{NewRestaurant, Restaurant, RestaurantId},
     }, utils::{fake_data::fake_data_sql, migration::migration_sql},
 };
-use futures::FutureExt;
 use sqlx::Row;
 use sqlx::{
     postgres::{PgPoolOptions, PgRow},
     PgPool,
 };
-use urlencoding::{decode, decode_binary};
+use urlencoding::decode;
 
 #[derive(Clone, Debug)]
 pub struct Store {
@@ -32,7 +31,9 @@ impl Store {
             connection: db_pool,
         }
     }
-
+    
+    /////////////////////////////////////////////////////////////////////////////////////
+    // utils
     pub async fn migrate(&self) {
         let sql = migration_sql();
         match sqlx::raw_sql(&sql).execute(&self.connection).await {
@@ -54,7 +55,8 @@ impl Store {
             }
         }
     }
-
+    /////////////////////////////////////////////////////////////////////////////////////
+    // restaurant
     pub async fn get_restaurants(
         &self,
         // if we don’t pass a number, "limit" will be None, and PostgreSQL will ignore it
@@ -200,7 +202,8 @@ impl Store {
             Err(e) => Err(Error::database_query_error(e)),
         }
     }
-
+    /////////////////////////////////////////////////////////////////////////////////////
+    // comments
     pub async fn get_comments(&self, restaurant_id: i32) -> Result<Vec<Comment>, error::Error> {
         match sqlx::query(
             "SELECT * FROM comments WHERE restaurant_id = $1 
@@ -448,7 +451,7 @@ impl Store {
         }
     }
 
-    pub async fn get_restaurant_image(&self, restaurant_id: i32) -> Result<String, Error> {
+    pub async fn _get_restaurant_pfp_image(&self, restaurant_id: i32) -> Result<String, Error> {
         match sqlx::query(
             "SELECT image from restaurant
             WHERE id = $1"
@@ -466,4 +469,5 @@ impl Store {
     }
     /////////////////////////////////////////////////////////////////////////////////////
 
+    
 }

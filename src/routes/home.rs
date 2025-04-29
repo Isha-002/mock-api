@@ -76,8 +76,11 @@ pub async fn home() -> Result<impl warp::Reply, warp::Rejection> {
                     <span class="method method-put">PUT</span>    /restaurants/<span class="param">id</span>/comments/<span class="param">comment_id</span>/likes/remove<br>
                     <span class="method method-put">PUT</span>    /restaurants/<span class="param">id</span>/comments/<span class="param">comment_id</span>/dislikes/remove<br>
                     
-                    <span class="method">GET</span>  /restaurants/city/<span class="param">tag</span><br>
-                    <span class="method">GET</span>  /restaurants/tag/<span class="param">city</span><br>
+                    <span class="method">GET</span>  /restaurants/city/<span class="param">city</span><br>
+                    <span class="method">GET</span>  /restaurants/tag/<span class="param">tag</span><br>
+
+                    <span class="method method-post">POST</span>  /restaurants/<span class="param">id</span>/upload<br>
+                    <span class="example">example: curl -X POST http://localhost:4444/restaurants/1/upload -F "file=@/file/path"</span><br>
                     
                     <div class="warning">UNDER DEVELOPMENT!</div>
                 </div>
