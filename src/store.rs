@@ -1,9 +1,9 @@
 use crate::{
     error::{self, Error},
     types::{
-        comment::{Comment, NewComment},
-        restaurant::{NewRestaurant, Restaurant, RestaurantId},
-    }, utils::{fake_data::fake_data_sql, migration::migration_sql},
+        account::{Account, NewAccount}, comment::{Comment, NewComment}, restaurant::{NewRestaurant, Restaurant, RestaurantId}
+    },
+    utils::{fake_data::fake_data_sql, migration::migration_sql},
 };
 use sqlx::Row;
 use sqlx::{
@@ -31,13 +31,13 @@ impl Store {
             connection: db_pool,
         }
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     // utils
     pub async fn migrate(&self) {
         let sql = migration_sql();
         match sqlx::raw_sql(&sql).execute(&self.connection).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 tracing::error!("Error migrating: {:?}", e);
                 panic!("Error migrating: {}", Error::database_query_error(e));
@@ -48,10 +48,13 @@ impl Store {
     pub async fn insert_fake_data(&self) {
         let sql = fake_data_sql();
         match sqlx::raw_sql(&sql).execute(&self.connection).await {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 tracing::error!("Error inserting fake data: {:?}", e);
-                panic!("Error inserting fake data: {}", Error::database_query_error(e));
+                panic!(
+                    "Error inserting fake data: {}",
+                    Error::database_query_error(e)
+                );
             }
         }
     }
@@ -380,12 +383,12 @@ impl Store {
     }
     /////////////////////////////////////////////////////////////////////////////////////
     // search
-    pub async fn search_by_city(&self, city: String) -> Result<Vec<Restaurant>, error::Error>  {
+    pub async fn search_by_city(&self, city: String) -> Result<Vec<Restaurant>, error::Error> {
         let decoded_city = decode(&city).unwrap().into_owned();
         match sqlx::query(
             "SELECT * from restaurant
             WHERE city = $1
-            ORDER BY rating DESC"
+            ORDER BY rating DESC",
         )
         .bind(decoded_city)
         .map(|row: PgRow| Restaurant {
@@ -412,7 +415,7 @@ impl Store {
         match sqlx::query(
             "SELECT * from restaurant
             WHERE $1 = ANY(tags)
-            ORDER BY rating DESC"
+            ORDER BY rating DESC",
         )
         .bind(decoded_tag)
         .map(|row: PgRow| Restaurant {
@@ -434,12 +437,16 @@ impl Store {
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////
-    // handle files 
-    pub async fn insert_file_to_restaurant(&self, url: &str, restaurant_id: i32) -> Result<bool, Error> {
+    // handle files
+    pub async fn insert_file_to_restaurant(
+        &self,
+        url: &str,
+        restaurant_id: i32,
+    ) -> Result<bool, Error> {
         match sqlx::query(
             "UPDATE restaurant 
             SET image = $1
-            WHERE id = $2"
+            WHERE id = $2",
         )
         .bind(url)
         .bind(restaurant_id)
@@ -454,12 +461,10 @@ impl Store {
     pub async fn _get_restaurant_pfp_image(&self, restaurant_id: i32) -> Result<String, Error> {
         match sqlx::query(
             "SELECT image from restaurant
-            WHERE id = $1"
+            WHERE id = $1",
         )
         .bind(restaurant_id)
-        .map(|row: PgRow| {
-            row.get("image")
-        })
+        .map(|row: PgRow| row.get("image"))
         .fetch_one(&self.connection)
         .await
         {
@@ -468,6 +473,33 @@ impl Store {
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////
-
-    
+    // auth
+    pub async fn add_account(self, account: Account) -> Result<bool, Error> {
+        match sqlx::query(
+            "INSERT INTO accounts (email, password, phone_number, roll)
+            VALUES ($1, $2, $3, $4)",
+        )
+        .bind(account.email)
+        .bind(account.password)
+        .execute(&self.connection)
+        .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) => {
+                tracing::event!(
+                    tracing::Level::ERROR,
+                    code = e
+                        .as_database_error()
+                        .unwrap()
+                        .code()
+                        .unwrap()
+                        .parse::<i32>()
+                        .unwrap(),
+                    db_message = e.as_database_error().unwrap().message(),
+                    constraint = e.as_database_error().unwrap().constraint().unwrap()
+                );
+                Err(Error::database_query_error(e))
+            }
+        }
+    }
 }

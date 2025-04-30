@@ -2,7 +2,8 @@
 DROP TABLE IF EXISTS comments CASCADE;
 DROP TABLE IF EXISTS restaurant CASCADE;
 DROP TYPE IF EXISTS foodType CASCADE;
-DROP TYPE IF EXISTS commentType CASCADE;
+DROP TYPE IF EXISTS role CASCADE;
+DROP TABLE IF EXISTS account CASCADE;
 
 CREATE TYPE foodType AS (
   name TEXT,
@@ -11,12 +12,6 @@ CREATE TYPE foodType AS (
   available BOOLEAN
 );
 
--- CREATE TYPE commentType AS (
---   name TEXT,
---   text TEXT,
---   likes INT,
---   dislikes INT
--- );
 
 CREATE TABLE IF NOT EXISTS restaurant (
   id SERIAL PRIMARY KEY,
@@ -41,3 +36,18 @@ CREATE TABLE IF NOT EXISTS comments (
   created_on TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- auth
+CREATE TYPE role AS ENUM (
+  'customer',
+  'restaurant_owner',
+  'banned_user',
+  'admin'
+);
+
+CREATE TABLE account (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL,
+  password TEXT NOT NULL,
+  phone_number TEXT NOT NULL,
+  role role NOT NULL
+);

@@ -1,10 +1,12 @@
+use routes::authentication::register;
 use routes::comments::{
     add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment,
     get_comments, put_comments,
 };
 use routes::files::restaurant_pfp_handler;
 use routes::restaurants::{
-    delete_restaurant, get_restaurants, get_single_restaurant, search_by_city, search_by_tag, update_restaurant
+    delete_restaurant, get_restaurants, get_single_restaurant, search_by_city, search_by_tag,
+    update_restaurant,
 };
 use routes::{home::home, restaurants::create_restaurant};
 use tracing_subscriber::field::MakeExt;
@@ -12,10 +14,10 @@ use tracing_subscriber::fmt::format;
 use utils::arguments::arguments;
 
 use std::fs::{create_dir_all, File, OpenOptions};
+use std::io::Write;
 use std::panic;
 use store::Store;
 use types::timer::CustomTimer;
-use std::io::Write;
 
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{http::Method, Filter};
@@ -28,7 +30,6 @@ use error::return_error;
 
 #[tokio::main]
 async fn main() {
-
     panic::set_hook(Box::new(|info| {
         let mut file = File::create("restaurant_api_error_log.txt").unwrap();
         let _ = writeln!(file, "Panic occurred: {}", info);
@@ -205,8 +206,7 @@ async fn main() {
         .and_then(search_by_tag);
 
     // static routes for serving files
-    let files_route = warp::path("upload")
-    .and(warp::fs::dir("./uploads"));
+    let files_route = warp::path("upload").and(warp::fs::dir("./uploads"));
 
     let restaurant_pfp_upload_route = warp::path("restaurants")
         .and(warp::path::param::<i32>())
@@ -222,7 +222,13 @@ async fn main() {
     //     .and(store_filter.clone())
     //     .and_then(get_file_handler);
 
-
+    // auth routes
+    let registration = warp::post()
+        .and(warp::path("registration"))
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and(warp::body::json())
+        .and_then(register);
 
     let routes = create_restaurant
         .or(home)
@@ -240,6 +246,7 @@ async fn main() {
         .or(search_by_tag)
         .or(files_route)
         .or(restaurant_pfp_upload_route)
+        .or(registration)
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);
