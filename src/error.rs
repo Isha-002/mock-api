@@ -6,6 +6,9 @@ use warp::{
     reply::Reply,
 };
 
+// duplicate key value error code:
+const DUPLICATE_KEY: u32 = 23505;
+
 /// # How errors work
 /// 1. adding an specific error to the enum Error
 /// 2. create a `fmt::Display` implementation for that enum
@@ -23,7 +26,7 @@ pub enum Error {
     creating_upload_dir(std::io::Error),
     write_file(std::io::Error),
     no_file,
-    bail_out_card
+    bail_out_card,
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -75,7 +78,27 @@ impl fmt::Display for InvalidID {
 }
 
 pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
-    if let Some(error) = r.find::<Error>() {
+    if let Some(Error::database_query_error(e)) = r.find() {
+        match e {
+            sqlx::Error::Database(err) => {
+                if err.code().unwrap().parse::<u32>().unwrap() == DUPLICATE_KEY {
+                    Ok(warp::reply::with_status(
+                        "Account already exsists".to_string(),
+                        warp::http::StatusCode::UNPROCESSABLE_ENTITY,
+                    ))
+                } else {
+                    Ok(warp::reply::with_status(
+                        "Cannot update data".to_string(),
+                        warp::http::StatusCode::UNPROCESSABLE_ENTITY,
+                    ))
+                }
+            }
+            _ => Ok(warp::reply::with_status(
+                "Cannot update data".to_string(),
+                warp::http::StatusCode::UNPROCESSABLE_ENTITY,
+            )),
+        }
+    } else if let Some(error) = r.find::<Error>() {
         Ok(warp::reply::with_status(
             error.to_string(),
             warp::http::StatusCode::RANGE_NOT_SATISFIABLE,

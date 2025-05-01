@@ -1,7 +1,8 @@
 use crate::store::Store;
-use crate::types::account::Account;
+use crate::types::account::{Account, NewAccount};
 use argon2::Config;
 use rand::Rng;
+use uuid::Uuid;
 use warp::http::StatusCode;
 
 pub fn hash_password(password: &[u8]) -> String {
@@ -10,11 +11,13 @@ pub fn hash_password(password: &[u8]) -> String {
     argon2::hash_encoded(password, &salt, &config).unwrap()
 }
 
-pub async fn register(store: Store, account: Account) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn register(store: Store, account: NewAccount) -> Result<impl warp::Reply, warp::Rejection> {
     let hashed_password = hash_password(account.password.as_bytes());
 
+    let uuid = Uuid::new_v4().to_string();
+
     let account = Account {
-        id: account.id,
+        id: uuid,
         email: account.email,
         password: hashed_password,
         phone_number: account.phone_number,

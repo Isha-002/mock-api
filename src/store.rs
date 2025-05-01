@@ -1,7 +1,7 @@
 use crate::{
     error::{self, Error},
     types::{
-        account::{Account, NewAccount}, comment::{Comment, NewComment}, restaurant::{NewRestaurant, Restaurant, RestaurantId}
+        account::Account, comment::{Comment, NewComment}, restaurant::{NewRestaurant, Restaurant, RestaurantId}
     },
     utils::{fake_data::fake_data_sql, migration::migration_sql},
 };
@@ -476,11 +476,14 @@ impl Store {
     // auth
     pub async fn add_account(self, account: Account) -> Result<bool, Error> {
         match sqlx::query(
-            "INSERT INTO accounts (email, password, phone_number, roll)
-            VALUES ($1, $2, $3, $4)",
+            "INSERT INTO account (id, email, password, phone_number, role)
+            VALUES ($1, $2, $3, $4, $5)",
         )
+        .bind(account.id)
         .bind(account.email)
         .bind(account.password)
+        .bind(account.phone_number)
+        .bind(account.role)
         .execute(&self.connection)
         .await
         {

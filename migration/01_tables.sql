@@ -45,9 +45,10 @@ CREATE TYPE role AS ENUM (
 );
 
 CREATE TABLE account (
-  id SERIAL PRIMARY KEY,
-  email TEXT NOT NULL,
+  id TEXT PRIMARY KEY,        
+  email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   phone_number TEXT NOT NULL,
   role role NOT NULL
 );
+
