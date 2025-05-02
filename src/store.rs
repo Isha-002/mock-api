@@ -1,7 +1,9 @@
 use crate::{
     error::{self, Error},
     types::{
-        account::Account, comment::{Comment, NewComment}, restaurant::{NewRestaurant, Restaurant, RestaurantId}
+        account::{Account, Login},
+        comment::{Comment, NewComment},
+        restaurant::{NewRestaurant, Restaurant, RestaurantId},
     },
     utils::{fake_data::fake_data_sql, migration::migration_sql},
 };
@@ -474,7 +476,7 @@ impl Store {
     }
     /////////////////////////////////////////////////////////////////////////////////////
     // auth
-    pub async fn add_account(self, account: Account) -> Result<bool, Error> {
+    pub async fn add_account(&self, account: Account) -> Result<bool, Error> {
         match sqlx::query(
             "INSERT INTO account (id, email, password, phone_number, role)
             VALUES ($1, $2, $3, $4, $5)",
@@ -505,4 +507,35 @@ impl Store {
             }
         }
     }
+
+    pub async fn get_account(&self, login: &Login) -> Result<Account, Error> {
+
+        let (query, value) = if let Some(phone) = &login.phone_number {
+            ("SELECT * FROM account WHERE phone_number = $1", phone)
+        } else if let Some(email) = &login.email {
+            ("SELECT * FROM account WHERE email = $1", email)
+        } else {
+            return Err(Error::missing_email_or_phone);
+        };
+
+        match sqlx::query(query)
+            .bind(value)
+            .map(|row: PgRow| Account {
+                id: row.get("id"),
+                email: row.get("email"),
+                phone_number: row.get("phone_number"),
+                password: row.get("password"),
+                role: row.get("role"),
+            })
+            .fetch_one(&self.connection)
+            .await
+        {
+            Ok(account) => Ok(account),
+            Err(e) => {
+                tracing::event!(tracing::Level::ERROR, "{:?}", e);
+                Err(Error::failed_to_get_account(e))
+            }
+        }
+    }
+
 }

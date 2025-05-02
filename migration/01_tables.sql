@@ -45,10 +45,13 @@ CREATE TYPE role AS ENUM (
 );
 
 CREATE TABLE account (
-  id TEXT PRIMARY KEY,        
+  id UUID PRIMARY KEY,        
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
-  phone_number TEXT NOT NULL,
-  role role NOT NULL
+  phone_number TEXT NOT NULL UNIQUE,
+  role role NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX idx_account_phone_number ON account (phone_number);
 

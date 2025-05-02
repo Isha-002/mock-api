@@ -1,4 +1,4 @@
-use routes::authentication::register;
+use routes::authentication::{login, register};
 use routes::comments::{
     add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment,
     get_comments, put_comments,
@@ -230,6 +230,13 @@ async fn main() {
         .and(warp::body::json())
         .and_then(register);
 
+    let login = warp::post()
+        .and(warp::path("login"))
+        .and(warp::path::end())
+        .and(store_filter.clone())
+        .and(warp::body::json())
+        .and_then(login);
+
     let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
@@ -247,6 +254,7 @@ async fn main() {
         .or(files_route)
         .or(restaurant_pfp_upload_route)
         .or(registration)
+        .or(login)
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);
@@ -255,7 +263,7 @@ async fn main() {
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// p: 290
+// p: 300
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅)
