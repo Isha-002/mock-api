@@ -2,7 +2,7 @@ use crate::error::Error;
 use crate::store::Store;
 use crate::types::account::{Account, Login, NewAccount};
 use argon2::Config;
-use paseto::v2::local_paseto;
+use chrono::prelude::*;
 use rand::Rng;
 use uuid::Uuid;
 use warp::http::StatusCode;
@@ -42,9 +42,16 @@ fn verify_password(hash: &str, password: &[u8]) -> Result<bool, argon2::Error> {
 }
 
 fn issue_token(account_id: Uuid) -> String {
-    let state = serde_json::to_string(&account_id).expect("Failed to serialize”) state");
-    local_paseto(&state, None, "RANDOM WORDS WINTER MACINTOSH PC".as_bytes())
-        .expect("Failed to create token")
+    let current_date_time = Utc::now();
+    let dt = current_date_time + chrono::Duration::days(2);
+
+    paseto::tokens::PasetoBuilder::new()
+        .set_encryption_key(&Vec::from("RANDOM WORDS WINTER SUFFER HI".as_bytes()))
+        .set_expiration(&dt)
+        .set_not_before(&Utc::now())
+        .set_claim("account_id", serde_json::json!(account_id))
+        .build()
+        .expect("Failed to construct paseto token w/ builder!")
 }
 
 pub async fn login(store: Store, login: Login) -> Result<impl warp::Reply, warp::Rejection> {

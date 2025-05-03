@@ -263,7 +263,7 @@ async fn main() {
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// p: 300
+
 
 // goals:
 // - restaurants endpoint return a json of all the restaurants (✅)
