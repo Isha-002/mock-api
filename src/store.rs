@@ -236,14 +236,12 @@ impl Store {
         comment: NewComment,
     ) -> Result<Comment, error::Error> {
         match sqlx::query(
-            "INSERT INTO comments (restaurant_id name text) VALUES ($1, $2, $3) 
-            WHERE id = $4
+            "INSERT INTO comments (restaurant_id, name, text) VALUES ($1, $2, $3) 
             RETURNING *",
         )
         .bind(restaurant_id)
         .bind(comment.name)
         .bind(comment.text)
-        .bind(restaurant_id)
         .map(|row: PgRow| Comment {
             id: row.get("id"),
             restaurant_id,
@@ -537,5 +535,6 @@ impl Store {
             }
         }
     }
+
 
 }

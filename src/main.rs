@@ -135,7 +135,7 @@ async fn main() {
         .and(store_filter.clone())
         .and_then(get_comments);
 
-    let put_comments = warp::put()
+    let put_comments = warp::post()
         .and(warp::path("restaurants"))
         .and(warp::path::param::<i32>())
         .and(warp::path("comments"))
