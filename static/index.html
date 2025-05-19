@@ -1,480 +1,519 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RESTaurant API Documentation</title>
     <style>
-      :root {
-        --primary: #00ff9d;
-        --background: #0d1117;
-        --surface: #161b22;
-        --border: #30363d;
-        --text: #c9d1d9;
-        --get: #58a6ff;
-        --post: #ffa657;
-        --put: #bd8cff;
-        --delete: #f85149;
-      }
+        :root {
+            --primary: #00ff9d;
+            --background: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --get: #58a6ff;
+            --post: #ffa657;
+            --put: #bd8cff;
+            --delete: #f85149;
+        }
 
-      body {
-        font-family: 'SF Mono', 'Courier New', monospace;
-        background-color: var(--background);
-        color: var(--text);
-        margin: 0;
-        line-height: 1.6;
-        padding: 0;
-      }
+        body {
+            font-family: 'SF Mono', 'Courier New', monospace;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            line-height: 1.6;
+            padding: 0;
+        }
 
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem;
-      }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
 
-      .header {
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 1.5rem;
-        margin-bottom: 2rem;
-      }
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-      .title {
-        color: var(--primary);
-        font-size: 2.5rem;
-        margin: 0 0 0.5rem 0;
-        letter-spacing: -0.05em;
-      }
+        .title {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -0.05em;
+        }
 
-      .subtitle {
-        color: var(--text);
-        opacity: 0.8;
-        margin: 0;
-      }
+        .subtitle {
+            color: var(--text);
+            opacity: 0.8;
+            margin: 0;
+        }
 
-      .section {
-        margin-bottom: 3rem;
-      }
+        .section {
+            margin-bottom: 3rem;
+        }
 
-      .section-title {
-        color: var(--primary);
-        font-size: 1.5rem;
-        margin: 2rem 0 1rem 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--border);
-      }
+        .section-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
 
-      .endpoint {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
+        .endpoint {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-      .endpoint-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
 
-      .method {
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.9em;
-        padding: 4px 12px;
-        border-radius: 4px;
-        margin-right: 1rem;
-      }
+        .method {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-right: 1rem;
+        }
 
-      .method-get {
-        color: var(--get);
-        border: 1px solid var(--get);
-      }
-      .method-post {
-        color: var(--post);
-        border: 1px solid var(--post);
-      }
-      .method-put {
-        color: var(--put);
-        border: 1px solid var(--put);
-      }
-      .method-delete {
-        color: var(--delete);
-        border: 1px solid var(--delete);
-      }
+        .method-get { color: var(--get); border: 1px solid var(--get); }
+        .method-post { color: var(--post); border: 1px solid var(--post); }
+        .method-put { color: var(--put); border: 1px solid var(--put); }
+        .method-delete { color: var(--delete); border: 1px solid var(--delete); }
 
-      .path {
-        font-family: monospace;
-        font-size: 1.1em;
-      }
+        .path {
+            font-family: monospace;
+            font-size: 1.1em;
+        }
 
-      .param {
-        color: #79c0ff;
-        font-style: italic;
-      }
+        .param {
+            color: #79c0ff;
+            font-style: italic;
+        }
 
-      .description {
-        margin: 1rem 0;
-        line-height: 1.6;
-      }
+        .description {
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
 
-      .request-title,
-      .response-title {
-        font-weight: 600;
-        margin: 1rem 0 0.5rem 0;
-        color: var(--primary);
-      }
+        .request-title, .response-title {
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            color: var(--primary);
+        }
 
-      .json-block {
-        background: var(--background);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 1rem;
-        margin: 0.5rem 0 1rem 0;
-        font-size: 0.9em;
-        overflow-x: auto;
-        font-family: monospace;
-        white-space: pre;
-      }
+        .json-block {
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 0.5rem 0 1rem 0;
+            font-size: 0.9em;
+            overflow-x: auto;
+            font-family: monospace;
+            white-space: pre;
+        }
 
-      .note {
-        background: #ffa65722;
-        border: 1px solid var(--post);
-        color: var(--post);
-        padding: 1rem;
-        border-radius: 6px;
-        margin-top: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
+        .note {
+            background: #ffa65722;
+            border: 1px solid var(--post);
+            color: var(--post);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
 
-      .note::before {
-        content: 'ℹ️';
-      }
+        .note::before {
+            content: "ℹ️";
+        }
 
-      .warning {
-        background: #f8514922;
-        border: 1px solid var(--delete);
-        color: var(--delete);
-        padding: 1rem;
-        border-radius: 6px;
-        margin-top: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
+        .warning {
+            background: #f8514922;
+            border: 1px solid var(--delete);
+            color: var(--delete);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
 
-      .warning::before {
-        content: '⚠️';
-      }
+        .warning::before {
+            content: "⚠️";
+        }
 
-      a {
-        color: var(--primary);
-        text-decoration: none;
-      }
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
 
-      a:hover {
-        text-decoration: underline;
-      }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <div class="header">
-        <h1 class="title">RESTaurant API</h1>
-        <p class="subtitle">
-          Comprehensive documentation for the restaurant management API
-        </p>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title">Authentication</h2>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-post">POST</span>
-            <span class="path">/registration</span>
-          </div>
-          <div class="description">
-            Register a new user account. Returns authentication token.
-          </div>
-          <div class="request-title">Request Body (JSON):</div>
-          <div class="json-block">
-            { "email": "user@example.com", "password": "securepassword123",
-            "phone_number": "09123456789", "role": "customer", "name": "John
-            Doe" }
-          </div>
-          <div class="note">
-            Role must be one of: "customer", "restaurant_owner", "admin"
-          </div>
+        <div class="header">
+            <h1 class="title">RESTaurant API</h1>
+            <p class="subtitle">Comprehensive documentation for the restaurant management API</p>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-post">POST</span>
-            <span class="path">/login</span>
-          </div>
-          <div class="description">
-            Authenticate and receive an access token.
-          </div>
-          <div class="request-title">Request Body (JSON):</div>
-          <div class="json-block">
-            { "email": "user@example.com", "password": "securepassword123" }
-          </div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            { "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", "user_id":
-            "550e8400-e29b-41d4-a716-446655440000" }
-          </div>
-        </div>
-      </div>
+        <div class="section">
+            <h2 class="section-title">Authentication</h2>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="path">/registration</span>
+                </div>
+                <div class="description">
+                    Register a new user account. Returns authentication token.
+                </div>
+                <div class="request-title">Request Body (JSON):</div>
+                <div class="json-block">{
+  "email": "user@example.com",
+  "password": "securepassword123",
+  "phone_number": "09123456789",
+  "role": "customer",
+  "name": "John Doe"
+}</div>
+                <div class="note">
+                    Role must be one of: "customer", "restaurant_owner", "admin"
+                </div>
+            </div>
 
-      <div class="section">
-        <h2 class="section-title">Restaurants</h2>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path">/restaurants</span>
-          </div>
-          <div class="description">
-            Get list of all restaurants with pagination.
-          </div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            [ { "id": 1, "name": "Delicious Food", "rating": 4.5, "distance":
-            1.2, "tags": ["italian", "pizza"], "image": "restaurant1.jpg",
-            "address": "123 Main St", "city": "Tehran", "location": [35.6895,
-            51.3890] }, { "id": 2, "name": "Burger Palace", "rating": 4.2,
-            "distance": 0.8, "tags": ["american", "burger"], "image":
-            "restaurant2.jpg", "address": "456 Oak Ave", "city": "Tehran",
-            "location": [35.7000, 51.4000] } ]
-          </div>
-        </div>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path">/restaurants/<span class="param">id</span></span>
-          </div>
-          <div class="description">
-            Get details for a specific restaurant including operating hours.
-          </div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            { "id": 1, "name": "Delicious Food", "rating": 4.5, "distance": 1.2,
-            "tags": ["italian", "pizza"], "image": "restaurant1.jpg", "address":
-            "123 Main St", "city": "Tehran", "location": [35.6895, 51.3890],
-            "hours": [ { "day_of_week": "شنبه", "open_time": "08:00:00",
-            "close_time": "22:00:00" }, { "day_of_week": "یکشنبه", "open_time":
-            "08:00:00", "close_time": "22:00:00" } ] }
-          </div>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="path">/login</span>
+                </div>
+                <div class="description">
+                    Authenticate and receive an access token.
+                </div>
+                <div class="request-title">Request Body (JSON):</div>
+                <div class="json-block">{
+  "email": "user@example.com",
+  "password": "securepassword123"
+}</div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user_id": "550e8400-e29b-41d4-a716-446655440000"
+}</div>
+            </div>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path"
-              >/restaurants/city/<span class="param">city</span></span
-            >
-          </div>
-          <div class="description">Get restaurants filtered by city name.</div>
+        <div class="section">
+            <h2 class="section-title">Restaurants</h2>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/restaurants</span>
+                </div>
+                <div class="description">
+                    Get list of all restaurants with pagination.
+                </div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">[
+  {
+    "id": 1,
+    "name": "Delicious Food",
+    "rating": 4.5,
+    "distance": 1.2,
+    "tags": ["italian", "pizza"],
+    "image": "restaurant1.jpg",
+    "address": "123 Main St",
+    "city": "Tehran",
+    "location": [35.6895, 51.3890]
+  },
+  {
+    "id": 2,
+    "name": "Burger Palace",
+    "rating": 4.2,
+    "distance": 0.8,
+    "tags": ["american", "burger"],
+    "image": "restaurant2.jpg",
+    "address": "456 Oak Ave",
+    "city": "Tehran",
+    "location": [35.7000, 51.4000]
+  }
+]</div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/restaurants/<span class="param">id</span></span>
+                </div>
+                <div class="description">
+                    Get details for a specific restaurant including operating hours.
+                </div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">{
+  "id": 1,
+  "name": "Delicious Food",
+  "rating": 4.5,
+  "distance": 1.2,
+  "tags": ["italian", "pizza"],
+  "image": "restaurant1.jpg",
+  "address": "123 Main St",
+  "city": "Tehran",
+  "location": [35.6895, 51.3890],
+  "hours": [
+    {
+      "day_of_week": "شنبه",
+      "open_time": "08:00:00",
+      "close_time": "22:00:00"
+    },
+    {
+      "day_of_week": "یکشنبه",
+      "open_time": "08:00:00",
+      "close_time": "22:00:00"
+    }
+  ]
+}</div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/restaurants/city/<span class="param">city</span></span>
+                </div>
+                <div class="description">
+                    Get restaurants filtered by city name.
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/restaurants/tag/<span class="param">tag</span></span>
+                </div>
+                <div class="description">
+                    Get restaurants filtered by tag (e.g., "italian", "burger").
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="path">/restaurants</span>
+                </div>
+                <div class="description">
+                    Create a new restaurant (admin/owner only).
+                </div>
+                <div class="request-title">Request Body (JSON):</div>
+                <div class="json-block">{
+  "name": "New Restaurant",
+  "address": "789 Pine Rd",
+  "city": "Tehran",
+  "location": [35.7100, 51.4100],
+  "tags": ["persian", "kebab"],
+  "hours": [
+    {
+      "day_of_week": "شنبه",
+      "open_time": "09:00",
+      "close_time": "23:00"
+    }
+  ]
+}</div>
+            </div>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path"
-              >/restaurants/tag/<span class="param">tag</span></span
-            >
-          </div>
-          <div class="description">
-            Get restaurants filtered by tag (e.g., "italian", "burger").
-          </div>
+        <div class="section">
+            <h2 class="section-title">Menu Items</h2>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/restaurants/<span class="param">id</span>/menu</span>
+                </div>
+                <div class="description">
+                    Get all food items for a restaurant.
+                </div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">[
+  {
+    "id": 1,
+    "name": "Pepperoni Pizza",
+    "image": "pizza.jpg",
+    "tag": "main",
+    "price": 120000,
+    "discount": true,
+    "discount_price": 100000,
+    "ingredient": ["pepperoni", "cheese", "tomato sauce"],
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Caesar Salad",
+    "image": "salad.jpg",
+    "tag": "appetizer",
+    "price": 80000,
+    "discount": false,
+    "ingredient": ["lettuce", "croutons", "parmesan"],
+    "available": true
+  }
+]</div>
+            </div>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-post">POST</span>
-            <span class="path">/restaurants</span>
-          </div>
-          <div class="description">
-            Create a new restaurant (admin/owner only).
-          </div>
-          <div class="request-title">Request Body (JSON):</div>
-          <div class="json-block">
-            { "name": "New Restaurant", "address": "789 Pine Rd", "city":
-            "Tehran", "location": [35.7100, 51.4100], "tags": ["persian",
-            "kebab"], "hours": [ { "day_of_week": "شنبه", "open_time": "09:00",
-            "close_time": "23:00" } ] }
-          </div>
-        </div>
-      </div>
+        <div class="section">
+            <h2 class="section-title">Comments & Ratings</h2>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/restaurants/<span class="param">id</span>/comments</span>
+                </div>
+                <div class="description">
+                    Get all comments for a restaurant.
+                </div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">[
+  {
+    "id": 1,
+    "account_id": "550e8400-e29b-41d4-a716-446655440000",
+    "text": "Great food!",
+    "rating": 5,
+    "created_on": "2023-01-15T14:30:00Z",
+    "likes": 5,
+    "dislikes": 1
+  }
+]</div>
+            </div>
 
-      <div class="section">
-        <h2 class="section-title">Menu Items</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="path">/restaurants/<span class="param">id</span>/comments</span>
+                </div>
+                <div class="description">
+                    Add a new comment/rating (authenticated users only).
+                </div>
+                <div class="request-title">Request Body (JSON):</div>
+                <div class="json-block">{
+  "text": "The service was excellent",
+  "rating": 5
+}</div>
+                <div class="warning">
+                    Each user can only leave one comment per restaurant
+                </div>
+            </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path"
-              >/restaurants/<span class="param">id</span>/menu</span
-            >
-          </div>
-          <div class="description">Get all food items for a restaurant.</div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            [ { "id": 1, "name": "Pepperoni Pizza", "image": "pizza.jpg", "tag":
-            "main", "price": 120000, "discount": true, "discount_price": 100000,
-            "ingredient": ["pepperoni", "cheese", "tomato sauce"], "available":
-            true }, { "id": 2, "name": "Caesar Salad", "image": "salad.jpg",
-            "tag": "appetizer", "price": 80000, "discount": false, "ingredient":
-            ["lettuce", "croutons", "parmesan"], "available": true } ]
-          </div>
-        </div>
-      </div>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-put">PUT</span>
+                    <span class="path">/comments/<span class="param">comment_id</span>/likes</span>
+                </div>
+                <div class="description">
+                    Like a comment (authenticated users only).
+                </div>
+            </div>
 
-      <div class="section">
-        <h2 class="section-title">Comments & Ratings</h2>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path"
-              >/restaurants/<span class="param">id</span>/comments</span
-            >
-          </div>
-          <div class="description">Get all comments for a restaurant.</div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            [ { "id": 1, "account_id": "550e8400-e29b-41d4-a716-446655440000",
-            "text": "Great food!", "rating": 5, "created_on":
-            "2023-01-15T14:30:00Z", "likes": 5, "dislikes": 1 } ]
-          </div>
-        </div>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-post">POST</span>
-            <span class="path"
-              >/restaurants/<span class="param">id</span>/comments</span
-            >
-          </div>
-          <div class="description">
-            Add a new comment/rating (authenticated users only).
-          </div>
-          <div class="request-title">Request Body (JSON):</div>
-          <div class="json-block">
-            { "text": "The service was excellent", "rating": 5 }
-          </div>
-          <div class="warning">
-            Each user can only leave one comment per restaurant
-          </div>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-put">PUT</span>
+                    <span class="path">/comments/<span class="param">comment_id</span>/dislikes</span>
+                </div>
+                <div class="description">
+                    Dislike a comment (authenticated users only).
+                </div>
+            </div>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-put">PUT</span>
-            <span class="path"
-              >/comments/<span class="param">comment_id</span>/likes</span
-            >
-          </div>
-          <div class="description">
-            Like a comment (authenticated users only).
-          </div>
+        <div class="section">
+            <h2 class="section-title">Orders</h2>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-get">GET</span>
+                    <span class="path">/orders</span>
+                </div>
+                <div class="description">
+                    Get user's order history (authenticated users only).
+                </div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">[
+  {
+    "id": 1,
+    "restaurant_id": 1,
+    "food_names": ["Pepperoni Pizza", "Caesar Salad"],
+    "status": "completed",
+    "total_price": 200000,
+    "created_at": "2023-01-10T12:30:00Z"
+  }
+]</div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="path">/orders</span>
+                </div>
+                <div class="description">
+                    Create a new order (authenticated users only).
+                </div>
+                <div class="request-title">Request Body (JSON):</div>
+                <div class="json-block">{
+  "restaurant_id": 1,
+  "food_ids": [1, 2],
+  "payment_method": "card"
+}</div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-put">PUT</span>
+                    <span class="path">/orders/<span class="param">id</span>/cancel</span>
+                </div>
+                <div class="description">
+                    Cancel an order (authenticated users only).
+                </div>
+            </div>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-put">PUT</span>
-            <span class="path"
-              >/comments/<span class="param">comment_id</span>/dislikes</span
-            >
-          </div>
-          <div class="description">
-            Dislike a comment (authenticated users only).
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title">Orders</h2>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-get">GET</span>
-            <span class="path">/orders</span>
-          </div>
-          <div class="description">
-            Get user's order history (authenticated users only).
-          </div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            [ { "id": 1, "restaurant_id": 1, "food_names": ["Pepperoni Pizza",
-            "Caesar Salad"], "status": "completed", "total_price": 200000,
-            "created_at": "2023-01-10T12:30:00Z" } ]
-          </div>
+        <div class="section">
+            <h2 class="section-title">Images</h2>
+            
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method method-post">POST</span>
+                    <span class="path">/restaurants/<span class="param">id</span>/upload</span>
+                </div>
+                <div class="description">
+                    Upload an image for a restaurant (owner/admin only).
+                </div>
+                <div class="note">
+                    Requires multipart/form-data with "file" field containing the image
+                </div>
+                <div class="response-title">Response (JSON):</div>
+                <div class="json-block">{
+  "filename": "restaurant_1_profile.jpg",
+  "url": "/images/restaurant_1_profile.jpg"
+}</div>
+            </div>
         </div>
 
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-post">POST</span>
-            <span class="path">/orders</span>
-          </div>
-          <div class="description">
-            Create a new order (authenticated users only).
-          </div>
-          <div class="request-title">Request Body (JSON):</div>
-          <div class="json-block">
-            { "restaurant_id": 1, "food_ids": [1, 2], "payment_method": "card" }
-          </div>
+        <div class="warning">
+            All endpoints requiring authentication need the "Authorization" header with "Bearer [token]"
         </div>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-put">PUT</span>
-            <span class="path"
-              >/orders/<span class="param">id</span>/cancel</span
-            >
-          </div>
-          <div class="description">
-            Cancel an order (authenticated users only).
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h2 class="section-title">Images</h2>
-
-        <div class="endpoint">
-          <div class="endpoint-header">
-            <span class="method method-post">POST</span>
-            <span class="path"
-              >/restaurants/<span class="param">id</span>/upload</span
-            >
-          </div>
-          <div class="description">
-            Upload an image for a restaurant (owner/admin only).
-          </div>
-          <div class="note">
-            Requires multipart/form-data with "file" field containing the image
-          </div>
-          <div class="response-title">Response (JSON):</div>
-          <div class="json-block">
-            { "filename": "restaurant_1_profile.jpg", "url":
-            "/images/restaurant_1_profile.jpg" }
-          </div>
-        </div>
-      </div>
-
-      <div class="warning">
-        All endpoints requiring authentication need the "Authorization" header
-        with "Bearer [token]"
-      </div>
     </div>
-  </body>
+</body>
 </html>

@@ -82,8 +82,7 @@ async fn main() {
         .allow_header("content-type")
         .allow_methods([Method::GET, Method::PUT, Method::DELETE, Method::POST]);
 
-    let home  = warp::get().and(warp::path::end()).and_then(home);
-
+    let home  = warp::path::end().and(warp::fs::file("static/index.html"));
     let get_restaurants = warp::get()
         .and(warp::path("restaurants"))
         .and(warp::path::end())
@@ -238,6 +237,9 @@ async fn main() {
         .and(warp::body::json())
         .and_then(login);
 
+    // 
+    let static_files = warp::fs::dir("static");
+
     let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
@@ -266,4 +268,14 @@ async fn main() {
 
 
 
+// goals:
+// - restaurants endpoint return a json of all the restaurants (✅)
+// - restaurants endpoint accept POST requests and adding the result to restaurants endpoint (✅)
+// - restaurant/id returns a json with specific id (✅)
+// - restaurant/id accept PUT requests and update the restaurant (✅)
+// - restaurant/id accept DELETE requests and delete the restaurant (✅)
 
+// issues:
+// - tests
+// - benchmark (✅)
+// - error handling
