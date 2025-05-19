@@ -237,9 +237,6 @@ async fn main() {
         .and(warp::body::json())
         .and_then(login);
 
-    // 
-    let static_files = warp::fs::dir("static");
-
     let routes = create_restaurant
         .or(home)
         .or(get_restaurants)
