@@ -1,3 +1,3 @@
 pub fn fake_data_sql() -> String {
-    include_str!("../../migration/01_data.sql").to_string()
+    include_str!("../../migrations/01_data.sql").to_string()
 }

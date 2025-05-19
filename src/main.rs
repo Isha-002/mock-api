@@ -1,3 +1,4 @@
+// #![recursion_limit = "256"]
 use routes::authentication::{login, register};
 use routes::comments::{
     add_dislike_comment, add_like_comment, delete_dislike_comment, delete_like_comment,
@@ -81,7 +82,7 @@ async fn main() {
         .allow_header("content-type")
         .allow_methods([Method::GET, Method::PUT, Method::DELETE, Method::POST]);
 
-    let home = warp::get().and(warp::path::end()).and_then(home);
+    let home  = warp::get().and(warp::path::end()).and_then(home);
 
     let get_restaurants = warp::get()
         .and(warp::path("restaurants"))
@@ -265,14 +266,4 @@ async fn main() {
 
 
 
-// goals:
-// - restaurants endpoint return a json of all the restaurants (✅)
-// - restaurants endpoint accept POST requests and adding the result to restaurants endpoint (✅)
-// - restaurant/id returns a json with specific id (✅)
-// - restaurant/id accept PUT requests and update the restaurant (✅)
-// - restaurant/id accept DELETE requests and delete the restaurant (✅)
 
-// issues:
-// - tests
-// - benchmark (✅)
-// - error handling

@@ -7,6 +7,13 @@ get -> customer - owner - admin
 put -> owner - admin
 delete -> owner - admin
 
+/restaurants/{id}/owner [get - post - put - delete - put]
+get -> owner - admin
+post -> owner - admin
+put -> owner - admin
+delete -> admin
+put(transfer ownership) -> admin
+
 /restaurants/{id}/menu [get - post]
 get -> customer - owner - admin
 post -> owner - admin
