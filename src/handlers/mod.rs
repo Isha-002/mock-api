@@ -1,6 +1,5 @@
 pub mod comment_handlers;
 pub mod food_handlers;
-pub mod home;
 pub mod restaurant_handlers;
 pub mod files_handlers;
 pub mod authentication_handlers;

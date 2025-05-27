@@ -1,19 +1,25 @@
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'weekday') THEN
+    CREATE TYPE weekday AS ENUM (
+      'شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'
+    );
+  END IF;
+END$$;
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role') THEN
+    CREATE TYPE role AS ENUM (
+      'customer',
+      'restaurant_owner',
+      'banned_user',
+      'admin'
+    );
+  END IF;
+END$$;
 
-
-
-
-CREATE TYPE weekday AS ENUM (
-  'شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'
-);
-
-CREATE TYPE role AS ENUM (
-  'customer',
-  'restaurant_owner',
-  'banned_user',
-  'admin'
-);
 
 
 CREATE TABLE IF NOT EXISTS account (
@@ -25,7 +31,7 @@ CREATE TABLE IF NOT EXISTS account (
   role role NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_account_phone_number ON account (phone_number);
+CREATE INDEX IF NOT EXISTS idx_account_phone_number ON account (phone_number);
 
 CREATE TABLE IF NOT EXISTS restaurant (
   id SERIAL PRIMARY KEY,
@@ -71,7 +77,7 @@ CREATE TABLE IF NOT EXISTS comments (
   PRIMARY KEY (id),
   UNIQUE (restaurant_id, account_id)
 );
-CREATE INDEX idx_comments_restaurant ON comments(restaurant_id);
+CREATE INDEX IF NOT EXISTS idx_comments_restaurant ON comments(restaurant_id);
 
 CREATE TABLE IF NOT EXISTS comment_votes (
   account_id UUID NOT NULL REFERENCES account(id) ON DELETE CASCADE,
@@ -99,8 +105,8 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX orders_account_idx ON orders(account_id);
-CREATE INDEX orders_created_idx ON orders(created_at);
+CREATE INDEX IF NOT EXISTS orders_account_idx ON orders(account_id);
+CREATE INDEX IF NOT EXISTS orders_created_idx ON orders(created_at);
 
 
 CREATE TABLE IF NOT EXISTS item (
@@ -136,4 +142,4 @@ CREATE TABLE IF NOT EXISTS payment(
   ))
 );
 
-CREATE INDEX idx_payment_order ON payment(order_id);
+CREATE INDEX IF NOT EXISTS idx_payment_order ON payment(order_id);

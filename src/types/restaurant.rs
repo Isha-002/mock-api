@@ -8,7 +8,7 @@ use sqlx::prelude::Type;
 pub struct Restaurant {
     pub id: RestaurantId,
     pub name: String,
-    pub rating: f32,
+    pub rating: f64,
     pub distance: f64,
     pub tags: Option<Vec<String>>,
     pub image: String,
@@ -39,7 +39,7 @@ impl fmt::Display for RestaurantId {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct NewRestaurant {
     pub name: String,
-    pub rating: f32,
+    pub rating: f64,
     pub distance: f64,
     pub tags: Option<Vec<String>>,
     pub image: String,
