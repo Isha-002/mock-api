@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use crate::error::Error;
 
-/// # Paginatio:
-/// this struct extract query paramaeters
-/// Extract query parameters from the `/restaurants` route
-/// `/restaurants?start=1&end=10`
+// # Pagination:
+// this struct extract query paramaeters
+// Extract query parameters from the `/restaurants` route
+// `/restaurants?start=1&end=10`
 #[derive(Debug, Default)]
 pub struct Pagination {
     pub limit: Option<i32>,
@@ -20,15 +20,22 @@ pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination,
                     .get("limit")
                     .unwrap()
                     .parse::<i32>()
-                    .map_err(Error::parse_error)?,
+                    .map_err(|_| Error::parse_error)?,
             ),
             offset: params
                 .get("offset")
                 .unwrap()
                 .parse::<i32>()
-                .map_err(Error::parse_error)?,
+                .map_err(|_| Error::parse_error)?,
         })
     } else {
         Err(Error::missing_parameters)
     }
+}
+
+pub fn extract_params<T: FromStr>(params: &HashMap<String, String>, key: &str) -> Result<T, Error> {
+    params
+        .get(key)
+        .ok_or_else(|| Error::missing_parameters) 
+        .and_then(|s| s.parse().map_err(|_| Error::parse_error)) 
 }

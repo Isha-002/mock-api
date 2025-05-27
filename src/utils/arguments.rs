@@ -16,7 +16,7 @@ pub fn arguments() -> ArgMatches {
             // --reset
             Arg::new("reset")
                 .long("reset")
-                .help("delete database tables and applying new changes")
+                .help("delete database tables")
                 .action(ArgAction::SetTrue),
         )
         .arg(

@@ -12,8 +12,8 @@ uuid = { version = "1.0.0", features = ["v4", "serde"]}
 tracing = { version = "0.1", features = ["log"]}
 tracing-subscriber = { version = "0.3", features = ["env-filter"]}
 tracing-appender = "0.2"
-chrono = { version = "0.4.39"}
-sqlx = { version = "0.8.0", default-features = false, features = [ "runtime-tokio-rustls", "migrate", "postgres", "uuid", "macros"] } 
+chrono = { version = "0.4.39", features = ["serde"]}
+sqlx = { version = "0.8.0", default-features = false, features = [ "runtime-tokio-rustls", "migrate", "postgres", "uuid", "macros", "chrono"] } 
 clap ={ version = "4", features = ["cargo"]}
 urlencoding = "2.1.3"
 futures = "0.3.31"

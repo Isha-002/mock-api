@@ -4,3 +4,6 @@ pub mod pagination;
 pub mod restaurant;
 pub mod timer;
 pub mod account;
+pub mod owner;
+pub mod orders;
+pub mod payment;

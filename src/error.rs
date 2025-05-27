@@ -12,7 +12,7 @@ const DUPLICATE_KEY: &str = "23505";
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
 pub enum Error {
-    parse_error(std::num::ParseIntError),
+    parse_error,
     missing_parameters,
     database_query_error(SqlxError),
     creating_upload_dir(std::io::Error),
@@ -22,14 +22,16 @@ pub enum Error {
     argon_library_error(argon2::Error),
     missing_email_or_phone,
     bail_out_card,
-    invalid_error_code(String),
-    failed_to_get_account(SqlxError)
+    _invalid_error_code(String),
+    failed_to_get_account(SqlxError),
+    cannot_decrypt_token,
+    not_authorized,
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::parse_error(ref err) => write!(f, "Cannot parse parameters: {err}"),
+            Error::parse_error => write!(f, "Cannot parse parameters"),
             Error::missing_parameters => write!(f, "Missing parameters"),
             Error::database_query_error(e) => write!(f, "Database error: {e}"),
             Error::creating_upload_dir(e) => write!(f, "Failed to create upload folder: {e}"),
@@ -39,8 +41,10 @@ impl std::fmt::Display for Error {
             Error::argon_library_error(e) => write!(f, "Password verification error: {e}"),
             Error::missing_email_or_phone => write!(f, "Please provide email or phone number"),
             Error::bail_out_card => write!(f, "Unexpected error occurred"),
-            Error::invalid_error_code(code) => write!(f, "Invalid database error code: {code}"),
+            Error::_invalid_error_code(code) => write!(f, "Invalid database error code: {code}"),
             Error::failed_to_get_account(e) => write!(f, "Failed to login/get account: {e}"),
+            Error::cannot_decrypt_token => write!(f, "invalid token"),
+            Error::not_authorized => write!(f, "No permission to change the underlying resource"),
         }
     }
 }
@@ -115,6 +119,12 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
         Ok(warp::reply::with_status(
             error.to_string(),
             warp::http::StatusCode::BAD_REQUEST,
+        ))
+    } else if let Some(Error::not_authorized) = r.find() {
+        event!(Level::ERROR, "Not matching account id");
+        Ok(warp::reply::with_status(
+            "No permission to change underlying resource".to_string(),
+            warp::http::StatusCode::UNAUTHORIZED,
         ))
     } else {
         Ok(warp::reply::with_status(

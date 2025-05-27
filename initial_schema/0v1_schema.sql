@@ -1,19 +1,9 @@
 
-DROP TABLE IF EXISTS comments CASCADE;
-DROP TABLE IF EXISTS food CASCADE;
-DROP TABLE IF EXISTS comment_votes CASCADE;
-DROP TABLE IF EXISTS owner CASCADE;
-DROP TABLE IF EXISTS orders_active CASCADE;
-DROP TABLE IF EXISTS orders_archived CASCADE;
-DROP TABLE IF EXISTS orders CASCADE;
-DROP TABLE IF EXISTS payment CASCADE;
-DROP TABLE IF EXISTS restaurant_hours CASCADE;
-DROP TABLE IF EXISTS restaurant CASCADE;
-DROP TABLE IF EXISTS account CASCADE;
-DROP TYPE IF EXISTS weekday CASCADE;
-DROP TYPE IF EXISTS role CASCADE;
 
--- Enum types
+
+
+
+
 CREATE TYPE weekday AS ENUM (
   'شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'
 );
@@ -26,7 +16,7 @@ CREATE TYPE role AS ENUM (
 );
 
 
-CREATE TABLE account (
+CREATE TABLE IF NOT EXISTS account (
   id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
@@ -37,7 +27,7 @@ CREATE TABLE account (
 );
 CREATE INDEX idx_account_phone_number ON account (phone_number);
 
-CREATE TABLE restaurant (
+CREATE TABLE IF NOT EXISTS restaurant (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   rating REAL NOT NULL DEFAULT 0,
@@ -50,16 +40,13 @@ CREATE TABLE restaurant (
   created_on TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE owner (
+CREATE TABLE IF NOT EXISTS owner (
   restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
   account_id UUID REFERENCES account(id) ON DELETE CASCADE,
-  name TEXT,
-  phone_number TEXT,
-  email TEXT,
-  national_id INT
+  national_id TEXT NOT NULL
 );
 
-CREATE TABLE food (
+CREATE TABLE IF NOT EXISTS food (
   id SERIAL PRIMARY KEY,
   restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -74,7 +61,7 @@ CREATE TABLE food (
     CHECK (NOT discount OR (discount AND discount_price IS NOT NULL))
 );
 
-CREATE TABLE comments (
+CREATE TABLE IF NOT EXISTS comments (
   id SERIAL,
   restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
   account_id UUID REFERENCES account(id) ON DELETE CASCADE,
@@ -86,14 +73,14 @@ CREATE TABLE comments (
 );
 CREATE INDEX idx_comments_restaurant ON comments(restaurant_id);
 
-CREATE TABLE comment_votes (
+CREATE TABLE IF NOT EXISTS comment_votes (
   account_id UUID NOT NULL REFERENCES account(id) ON DELETE CASCADE,
   comment_id INT NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
   vote_type INT NOT NULL CHECK (vote_type IN (1, -1)),
   PRIMARY KEY (account_id, comment_id)
 );
 
-CREATE TABLE restaurant_hours (
+CREATE TABLE IF NOT EXISTS restaurant_hours (
   restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
   day_of_week weekday NOT NULL,
   open_time TIME NOT NULL,
@@ -101,44 +88,52 @@ CREATE TABLE restaurant_hours (
   PRIMARY KEY (restaurant_id, day_of_week)
 );
 
--- Partitioned orders table
-CREATE TABLE orders (
-  id SERIAL,
+
+
+CREATE TABLE IF NOT EXISTS orders (
+  id SERIAL PRIMARY KEY,
   account_id UUID NOT NULL REFERENCES account(id) ON DELETE CASCADE,
-  restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
-  food_names TEXT[] NOT NULL,
-  status TEXT NOT NULL DEFAULT 'cart' CHECK (status IN ('cart', 'pending', 'completed', 'canceled')),
+  status TEXT NOT NULL CHECK (status IN ('cart', 'pending', 'completed', 'canceled')),
   total_price INT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (id, status)
-) PARTITION BY LIST(status);
-
-CREATE TABLE orders_active PARTITION OF orders
-  FOR VALUES IN ('cart', 'pending');
-
-CREATE TABLE orders_archived PARTITION OF orders
-  FOR VALUES IN ('completed', 'canceled');
+  total_discounted_price INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 
 CREATE INDEX orders_account_idx ON orders(account_id);
-CREATE INDEX orders_restaurant_idx ON orders(restaurant_id);
 CREATE INDEX orders_created_idx ON orders(created_at);
 
-CREATE TABLE payment (
+
+CREATE TABLE IF NOT EXISTS item (
+    id SERIAL PRIMARY KEY,
+    order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    account_id UUID NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
+    food_id INT NOT NULL REFERENCES food(id) ON DELETE CASCADE,
+    quantity INT NOT NULL,
+    name TEXT NOT NULL,
+    image TEXT NOT NULL,
+    price INTEGER NOT NULL,
+    discount_price INTEGER,
+    UNIQUE(order_id, food_id)
+);
+
+
+
+CREATE TABLE IF NOT EXISTS payment(
   id SERIAL PRIMARY KEY,
   account_id UUID NOT NULL REFERENCES account(id) ON DELETE CASCADE,
   restaurant_id INT NOT NULL REFERENCES restaurant(id),
-  order_id INT NOT NULL,
-  order_status TEXT NOT NULL,
-  FOREIGN KEY (order_id, order_status) REFERENCES orders(id, status),
+  order_id INT NOT NULL REFERENCES orders(id),
   cash BOOLEAN NOT NULL,
   paid_money INT,
   transaction_id TEXT,
   card_number TEXT,
   CONSTRAINT paid_with_cash
     CHECK (cash OR (
-      paid_money IS NOT NULL AND
-      transaction_id IS NOT NULL AND
-      card_number IS NOT NULL
-    ))
+    paid_money IS NOT NULL AND
+    transaction_id IS NOT NULL AND
+    card_number IS NOT NULL
+  ))
 );
 
+CREATE INDEX idx_payment_order ON payment(order_id);

@@ -1,6 +1,7 @@
-pub mod comments;
-pub mod food;
-pub mod home;
-pub mod restaurants;
-pub mod files;
-pub mod authentication;
+pub mod authentication_routes;
+pub mod comment_routes;
+pub mod food_routes;
+pub mod file_routes;
+pub mod restaurant_routes;
+pub mod order_routes;
+pub mod owner_routes;
