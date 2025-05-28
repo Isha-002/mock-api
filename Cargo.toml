@@ -20,7 +20,7 @@ futures = "0.3.31"
 rand = "0.9"
 rust-argon2 = "2.0"
 paseto = "2"
-
+openssl = { version = "0.10", features = ["vendored"] }
 
 [profile.dev]
 incremental = true          # Keep incremental compilation
