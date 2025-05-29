@@ -1,3 +1,4 @@
+SET search_path = public; 
 
 DO $$
 BEGIN
@@ -46,12 +47,6 @@ CREATE TABLE IF NOT EXISTS restaurant (
   created_on TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS owner (
-  restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
-  account_id UUID REFERENCES account(id) ON DELETE CASCADE,
-  national_id TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS food (
   id SERIAL PRIMARY KEY,
   restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
@@ -66,6 +61,13 @@ CREATE TABLE IF NOT EXISTS food (
   CONSTRAINT discount_price_required 
     CHECK (NOT discount OR (discount AND discount_price IS NOT NULL))
 );
+
+CREATE TABLE IF NOT EXISTS owner (
+  restaurant_id INT NOT NULL REFERENCES restaurant(id) ON DELETE CASCADE,
+  account_id UUID REFERENCES account(id) ON DELETE CASCADE,
+  national_id TEXT NOT NULL
+);
+
 
 CREATE TABLE IF NOT EXISTS comments (
   id SERIAL,

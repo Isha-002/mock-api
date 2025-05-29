@@ -15,6 +15,8 @@ impl Store {
         // if we pass 0 as an offset, it will do the same
         offset: i32,
     ) -> Result<Vec<Restaurant>, Error> {
+        
+        // println!("limit = {:?}, offset = {}", limit, offset);
         match sqlx::query(
             "SELECT 
             restaurant.*, 

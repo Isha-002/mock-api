@@ -61,7 +61,7 @@ fn issue_token(account_id: Uuid) -> String {
     let dt = current_date_time + chrono::Duration::days(3);
 
     paseto::tokens::PasetoBuilder::new()
-        .set_encryption_key(&Vec::from("RANDOM WORDS WINTER SUFFER HI".as_bytes()))
+        .set_encryption_key(&Vec::from("operation desert fox|!z7e&b%@1".as_bytes()))
         .set_expiration(&dt)
         .set_not_before(&Utc::now())
         .set_claim("account_id", serde_json::json!(account_id))

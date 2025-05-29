@@ -1,4 +1,4 @@
-
+use crate::utils::colors::ansi::*;
 use routes::authentication_routes::auth_routes;
 use routes::comment_routes::comment_routes;
 use routes::file_routes::file_routes;
@@ -63,6 +63,8 @@ async fn main() {
         )
         .init();
 
+
+
     let store = Store::new("postgres://postgres:4431@localhost:5432/restaurantapi").await;
 
     // running inital schema
@@ -96,7 +98,7 @@ async fn main() {
         .with(warp::trace::request())
         .recover(return_error);
 
-    println!("starting the server on http://localhost:4444/");
+    println!("{BRIGHT_BLUE}starting the server on http://localhost:4444/{RESET}");
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 

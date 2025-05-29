@@ -1719,6 +1719,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
+ "text_io",
  "tokio",
  "tracing",
  "tracing-appender",
@@ -2312,6 +2313,12 @@ dependencies = [
  "rustix",
  "windows-sys 0.59.0",
 ]
+
+[[package]]
+name = "text_io"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d8d3ca3b06292094e03841d8995e910712d2a10b5869c8f9725385b29761115"
 
 [[package]]
 name = "thiserror"
