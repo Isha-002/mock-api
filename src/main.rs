@@ -102,8 +102,5 @@ async fn main() {
     warp::serve(routes).run(([0, 0, 0, 0], 4444)).await;
 }
 
-// 
-// 3
-// database string 1
-// terminal color 9
+
 
